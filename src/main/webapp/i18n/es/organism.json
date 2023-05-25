@@ -1,0 +1,26 @@
+{
+    "coetlApp": {
+        "organism": {
+            "home": {
+                "title": "Organismos responsables",
+                "createLabel": "Añadir nuevo organismo responsable"
+            },
+            "delete": {
+                "question": "¿Seguro que quiere eliminar el organismo responsable <b>{{ name }}</b>?"
+            },
+            "id": "Id",
+            "name": "Nombre",
+            "description": "Descripción",
+            "emptyListMessage": "No existen organismos responsables",
+            "parameterHelp": {
+                "title": "Ayuda",
+                "tooltip": "Por favor haga click en este icono para mostrar la ayuda."
+            },
+            "global": {
+                "title": "Organismos responsables para las ETL",
+                "createLabel": "Añadir nuevo organismo responsable",
+                "emptyListMessage": "No existen organismos responsables"
+            }
+        }
+    }
+}

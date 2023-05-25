@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title th:text="#{email.etl.error.title(${etl.code})}"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<body>
+    <p>
+        <span th:text="#{email.etl.error.message(${etl.code})}"/>
+    </p>
+    <ul>
+        <li th:text="#{email.etl.error.nombre(${etl.name})}"/>
+        <li th:text="#{email.etl.error.tipo(${etl.type})}"/>
+        <li th:text="#{email.etl.error.date(${date})}"/>
+        <li th:text="#{email.etl.error.error(${tipoError})}"/>
+    </ul>
+
+</body>
+
+</html>

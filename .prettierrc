@@ -1,0 +1,26 @@
+{
+    "useTabs": false,
+    "tabWidth": 4,
+    "bracketSpacing": true,
+    "arrowParens": "always",
+    "singleQuote": true,
+    "printWidth": 100,
+    "semi": true,
+    "parser": "typescript",
+    "overrides": [
+        {
+            "files": "*.scss",
+            "options": {
+                "parser":"scss",
+                "printWidth": 180
+            }
+        },
+        {
+            "files": "*.html",
+            "options": {
+                "parser": "html",
+                "printWidth": 180
+            }
+        }
+    ]
+}

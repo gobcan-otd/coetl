@@ -1,0 +1,21 @@
+@import '~scss/variables';
+@import '~scss/mixins';
+
+:host {
+    /deep/ .password-input {
+        border: none !important;
+        background: none;
+    }
+}
+
+.title-with-help {
+    padding-right: 10px;
+}
+
+.help-label {
+    font-size: 1.26rem;
+}
+
+.sizeValue {
+    word-break: break-all;
+}

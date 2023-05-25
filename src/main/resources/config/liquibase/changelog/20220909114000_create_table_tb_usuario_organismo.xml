@@ -1,0 +1,80 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="arte" id="20220909114000-0">
+        <createTable tableName="tb_roles">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="arte" id="20220909114000-1">
+        <createSequence sequenceName="tb_roles_id_seq" startValue="10" incrementBy="50" />
+    </changeSet>
+
+    <changeSet  author="arte" id="20220909114000-2">
+        <sqlFile dbms="postgresql" path="config/liquibase/postgresql/insert_current_roles.sql" />
+    </changeSet>
+
+    <changeSet author="arte" id="20220909114000-3">
+         <createTable tableName="tb_usuario_rol_organismo">
+               <column name="id" type="bigint">
+                   <constraints primaryKey="true"/>
+               </column>
+               <column name="id_usuario" type="bigint"
+                   remarks="Clave foránea de la tabla usuario">
+                   <constraints nullable="false" 
+                       foreignKeyName="fk_usuario_id" 
+                       references="usuario(id)"/>
+               </column>
+               <column name="id_rol" type="bigint"
+                   remarks="Clave foránea de la tabla roles">
+                   <constraints nullable="false" 
+                       foreignKeyName="fk_usuario_rol_id" 
+                       references="tb_roles(id)"/>
+               </column>
+               <column name="id_organismo" type="bigint"
+                   remarks="Clave foránea de la tabla organismo">
+                   <constraints nullable="false"
+                       foreignKeyName="fk_organismo_id" 
+                       references="tb_organismo(id)"/>
+             </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="arte" id="20220909114000-4">
+        <createSequence sequenceName="usuario_rol_organismo_id_seq" startValue="10" incrementBy="50" />
+    </changeSet>
+
+    <changeSet author="arte" id="20220909114000-5">
+        <addUniqueConstraint
+            columnNames="id_usuario, id_rol, id_organismo"
+            constraintName="unique_user_rol_organismo"
+            tableName="tb_usuario_rol_organismo"
+        />
+    </changeSet>
+
+    <changeSet  author="arte" id="20220909114000-6">
+        <sqlFile dbms="postgresql" path="config/liquibase/postgresql/insert_current_usuario_rol_organismo.sql" />
+    </changeSet>
+
+    <changeSet author="arte" id="20220909114000-7">
+        <dropTable cascadeConstraints="true" tableName="usuario_rol"/>
+    </changeSet>
+
+    <!-- Added the function lower_unaccent. -->
+    <changeSet author="arte" id="20220909114000-8">
+        <sqlFile dbms="postgresql" path="config/liquibase/postgresql/drop_procedure.sql" />
+    </changeSet>
+
+    <!-- Added the function lower_unaccent. -->
+    <changeSet author="arte" id="20220909114000-9">
+        <createProcedure procedureName="add_usuario_with_existing_rol" path="../postgresql/procedure_add_usuario_with_existing_rol_organismo.sql"
+            relativeToChangelogFile="true" dbms="postgresql"></createProcedure>
+    </changeSet>
+
+</databaseChangeLog>

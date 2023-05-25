@@ -1,0 +1,31 @@
+{
+    "coetlApp": {
+        "execution": {
+            "home": {
+                "title": "Ejecuciones"
+            },
+            "planningDate": "Fecha de planificación",
+            "startDate": "Fecha de inicio",
+            "finishDate": "Fecha de finalización",
+            "type": {
+                "label": "Tipo",
+                "AUTO": "Automática",
+                "MANUAL": "Manual"
+            },
+            "result": {
+                "label": "Resultado",
+                "SUCCESS": "Correcto",
+                "FAILED": "Fallo",
+                "WAITING": "En espera",
+                "RUNNING": "En ejecución",
+                "DUPLICATED": "Duplicado"
+            },
+            "notes": "Notas",
+            "emptyListMessage": "No hay ejecuciones para esta ETL",
+            "executionResult": {
+                "label": "Estado Ejecución"
+            },
+            "executor": "Usuario"
+        }
+    }
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20180806100000_added_tables_Quartz.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20180117115714_added_function_lower_unaccent.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20180118152128_added_procedure_add_usuario_with_existing_rol.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20180126141730_added_entity_File.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20180725155830_added_entity_Etl.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20180806152030_added_entity_Execution.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20190813141030_added_entity_Health.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20190828120000_added_entity_EtlAttachedFile.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20190902091500_added_entity_Parameter.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20211103100900_add_colum_entity_Execution.xml" relativeToChangelogFile="false" />
+  <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
+  <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
+    <include file="config/liquibase/changelog/20180419081000_added_indexes.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/202203291208_change_entity_Etl.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20220331094000_add_column_Parameter.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20220426100000_added_entity_Organismo.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20220601133900_change_constraint_Parameter.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20220822100000_rename_column_Organismo.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20220823100000_delete_table_tb_file.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20220823100000_delete_column_etl_description_file_fk.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20220823100000_delete_table_tb_etls_attached_files.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20220829080000_alter_table_parameters.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20220901114000_add_column_parameter_description.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20220908114000_set_size_limit_column_description.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20220905080000_modify_etl_organismos.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20220909114000_create_table_tb_usuario_organismo.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20221031100700_add_column_etl_visibility.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20221122130015_replace_relation_admin_with_check.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20221229073543_add_executor_tb_executions.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20230307081000_update_procedure_add_usuario_with_existing_rol.xml" relativeToChangelogFile="false" />
+</databaseChangeLog>

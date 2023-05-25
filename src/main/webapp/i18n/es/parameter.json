@@ -1,0 +1,39 @@
+{
+    "coetlApp": {
+        "parameter": {
+            "home": {
+                "title": "Parámetros ETL",
+                "createLabel": "Añadir nuevo parámetro ETL"
+            },
+            "delete": {
+                "question": "¿Seguro que quiere eliminar el parámetro <b>{{ key }}</b>?"
+            },
+            "key": "Clave",
+            "value": "Valor",
+            "type": {
+                "label": "Tipo",
+                "AUTO": "Automática",
+                "MANUAL": "Manual",
+                "GLOBAL": "Global"
+            },
+            "typology": {
+                "label": "Tipología",
+                "PASSWORD": "Contraseña",
+                "GENERIC": "Genérico"
+            },
+            "description": {
+                "label": "Descripción"
+            },
+            "emptyListMessage": "No existen parámetros para esta ETL",
+            "parameterHelp": {
+                "title": "Ayuda",
+                "tooltip": "Por favor haga click en este icono para mostrar la ayuda."
+            },
+            "global": {
+                "title": "Parámetros Globales para las ETL",
+                "createLabel": "Añadir nuevo parámetro global",
+                "emptyListMessage": "No existen parámetros globales"
+            }
+        }
+    }
+}

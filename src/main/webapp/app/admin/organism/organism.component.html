@@ -1,0 +1,61 @@
+<div class="entity" acMakeFixedRoom>
+    <div class="entity-header">
+        <h2>
+            <span class="title-with-help">
+                <span jhiTranslate="coetlApp.organism.global.title"></span>
+            </span>
+            <div>
+                <button type="button" class="btn btn-primary btn-sm" (click)="editOrganismo()">
+                    <span class="fa fa-plus"></span>&nbsp;
+                    <span jhiTranslate="coetlApp.organism.global.createLabel"></span>
+                </button>
+            </div>
+        </h2>
+    </div>
+
+    <ac-spinner *ngIf="!organismos"></ac-spinner>
+
+    <ng-container *ngIf="existOrganismos(); else emptyList">
+        <div class="table-responsive">
+            <table class="table table-hover" acStickyTableHeader>
+                <thead>
+                    <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
+                        <th style="width: 10%;" jhiSortBy="id">
+                            <span jhiTranslate="coetlApp.organism.id"></span>
+                            <span class="fa fa-sort order-by-class"></span>
+                        </th>
+                        <th style="width: 30%;" jhiSortBy="name">
+                            <span jhiTranslate="coetlApp.organism.name"></span>
+                            <span class="fa fa-sort order-by-class"></span>
+                        </th>
+                        <th style="width: 30%;" jhiSortBy="description">
+                            <span jhiTranslate="coetlApp.organism.description"></span>
+                            <span class="fa fa-sort order-by-class"></span>
+                        </th>
+                        <th style="width: 30%;"></th>
+                    </tr>
+                </thead>
+                <tr *ngFor="let organismo of organismos; let i = index">
+                    <td>{{ organismo.id }}</td>
+                    <td>{{ organismo.name }}</td>
+                    <td><span [ngClass]="isOverflow(organismo) ? 'sizeValue' : ''">{{ organismo.description }}</span></td>
+                    <td>
+                        <button type="button" class="btn btn-warning btn-sm" (click)="editOrganismo(organismo)">
+                            <span class="fa fa-pencil"></span>&nbsp;
+                            <span jhiTranslate="entity.action.edit"></span>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" (click)="deleteOrganismo(organismo)">
+                            <span class="fa fa-remove"></span>&nbsp;
+                            <span jhiTranslate="entity.action.delete"></span>
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </ng-container>
+</div>
+<ng-template #emptyList>
+    <div class="empty-list">
+        <span jhiTranslate="coetlApp.organism.global.emptyListMessage"></span>
+    </div>
+</ng-template>

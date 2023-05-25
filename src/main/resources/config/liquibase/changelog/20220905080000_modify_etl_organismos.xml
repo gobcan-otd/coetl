@@ -1,0 +1,56 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet  author="arte" id="20220905080000-1">
+        <sqlFile dbms="postgresql" path="config/liquibase/postgresql/update_organismos_from_etl.sql" />
+    </changeSet>
+
+    <changeSet  author="arte" id="20220905080000-2">
+        <createTable tableName="tmp_etl_organismo">
+            <column name="etl_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column name="id_organismo" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet  author="arte" id="20220905080000-3">
+        <sqlFile dbms="postgresql" path="config/liquibase/postgresql/set_relation_organismos_etl.sql" />
+    </changeSet>
+
+    <changeSet author="arte" id="20220905080000-4">
+        <dropColumn columnName="organization_in_charge" tableName="tb_etls">
+        </dropColumn>
+    </changeSet>
+
+    <changeSet author="arte" id="20220905080000-5">
+        <addColumn tableName="tb_etls" >
+            <column name="organization_in_charge" position="6" type="bigint" >
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="arte" id="20220905080000-6">
+        <sqlFile dbms="postgresql" path="config/liquibase/postgresql/add_organismo_etl.sql" />
+    </changeSet>
+
+    <changeSet author="arte" id="20220905080000-7">
+        <addNotNullConstraint 
+               columnDataType="bigint" 
+               columnName="organization_in_charge"  
+               tableName="tb_etls" /> 
+    </changeSet>
+    
+    <changeSet author="arte" id="20220905080000-8">
+        <addForeignKeyConstraint baseColumnNames="organization_in_charge" 
+                baseTableName="tb_etls" constraintName="fk_tb_organismo_id" 
+                referencedColumnNames="id" referencedTableName="tb_organismo" />
+    </changeSet>
+
+    <changeSet author="arte" id="20220905080000-9">
+        <dropTable cascadeConstraints="true" tableName="tmp_etl_organismo"/>
+    </changeSet>
+
+</databaseChangeLog>

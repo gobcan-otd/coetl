@@ -1,0 +1,13 @@
+.fix_spanning_row {
+    td {
+        padding: 0.75rem !important;
+    }
+}
+
+tbody:hover,
+tr.hover,
+th.hover,
+td.hover,
+tr.hoverable:hover {
+    background-color: #f8f8f8;
+}
