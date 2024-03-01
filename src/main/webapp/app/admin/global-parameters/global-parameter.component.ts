@@ -8,7 +8,7 @@ import { GloablParameterService } from './global-parameter.service';
 import { GlobalParameterDialogComponent } from './gloabl-parameter-dialog/global-parameter-dialog.component';
 import { GlobalParameterDeleteDialogComponent } from './gloabl-parameter-dialog/global-parameter-delete-dialog.component';
 import { Subscription } from 'rxjs';
-import { JhiEventManager } from 'ng-jhipster';
+import { JhiEventManager, JhiParseLinks } from 'ng-jhipster';
 import { EtlParameterHelpDialogComponent } from '../../entities/etl/etl-parameter-help-dialog';
 
 @Component({
@@ -17,9 +17,10 @@ import { EtlParameterHelpDialogComponent } from '../../entities/etl/etl-paramete
 })
 export class GlobalParameterComponent implements OnInit, OnDestroy {
     public static EVENT_NAME = 'etlParameterListModification';
-    private page: number;
-    private totalItems: number;
-    private itemsPerPage: number;
+    public page: number;
+    public totalItems: number;
+    public itemsPerPage: number;
+    public links: any;
     public visibleAction: boolean;
 
     public isPassword: boolean;
@@ -34,6 +35,7 @@ export class GlobalParameterComponent implements OnInit, OnDestroy {
 
     constructor(
         private globalParameterService: GloablParameterService,
+        private parseLinks: JhiParseLinks,
         private activatedRoute: ActivatedRoute,
         private genericModalService: GenericModalService,
         private translateService: TranslateService,
@@ -51,12 +53,15 @@ export class GlobalParameterComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.loadAll();
         this.registerChanges();
         this.isVisibleAction();
+        this.activatedRoute.queryParams.subscribe(() => {
+            this.loadAll();
+        });
     }
 
     ngOnDestroy() {
+        this.routeDataSubscription.unsubscribe();
         this.eventManager.destroy(this.eventSubscriber);
     }
 
@@ -138,6 +143,7 @@ export class GlobalParameterComponent implements OnInit, OnDestroy {
     }
 
     private onSuccess(data: Parameter[], headers) {
+        this.links = this.parseLinks.parse(headers.get('link'));
         this.totalItems = headers.get('X-Total-Count');
         this.parameters = data;
     }

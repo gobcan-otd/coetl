@@ -64,6 +64,7 @@ public class ParameterServiceImpl implements ParameterService {
     @Override
     public Parameter create(Parameter parameter) {
         LOGGER.debug("Request to create a Parameter : {}", parameter);
+        this.trimValuesParameter(parameter);
         parameterValidator.validate(parameter);
         return save(parameter);
     }
@@ -71,6 +72,7 @@ public class ParameterServiceImpl implements ParameterService {
     @Override
     public Parameter update(Parameter parameter) {
         LOGGER.debug("Request to update a Parameter : {}", parameter);
+        this.trimValuesParameter(parameter);
         parameterValidator.validate(parameter);
         return save(parameter);
     }
@@ -125,5 +127,10 @@ public class ParameterServiceImpl implements ParameterService {
         return parameterRepository.findAllByType(Type.GLOBAL, pageable);
     }
 
+    private Parameter trimValuesParameter(Parameter parameter) {
+        parameter.setValue(parameter.getValue().trim());
+        parameter.setKey(parameter.getKey().trim());
+        return parameter;
+    }
 
 }

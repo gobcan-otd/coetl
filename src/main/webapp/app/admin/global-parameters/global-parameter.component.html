@@ -66,6 +66,7 @@
                 </tr>
             </table>
         </div>
+        <ac-pagination [(page)]="page" [(totalItems)]="totalItems" [(itemsPerPage)]="itemsPerPage" (onTransition)="transition()"></ac-pagination>
     </ng-container>
 </div>
 <ng-template #emptyList>

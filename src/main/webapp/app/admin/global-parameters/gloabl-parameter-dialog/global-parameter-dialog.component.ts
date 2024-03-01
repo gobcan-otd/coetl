@@ -52,7 +52,13 @@ export class GlobalParameterDialogComponent implements OnInit {
         }
     }
 
+    private trimValuesParameter() {
+        this.parameter.value = this.parameter.value.trim();
+        this.parameter.key = !!this.parameter.id ? this.parameter.key : this.parameter.key.trim();
+    }
+
     public save() {
+        this.trimValuesParameter();
         const parameterEditObservable = !!this.parameter.id
             ? this.globalParameterService.updateParameter(this.parameter)
             : this.globalParameterService.createParameter(this.parameter);

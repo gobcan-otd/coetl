@@ -55,7 +55,13 @@ export class EtlParameterDialogComponent implements OnInit {
         }
     }
 
+    private trimValuesParameter() {
+        this.parameter.value = this.parameter.value.trim();
+        this.parameter.key = !!this.parameter.id ? this.parameter.key : this.parameter.key.trim();
+    }
+
     public save() {
+        this.trimValuesParameter();
         const parameterEditObservable = !!this.parameter.id
             ? this.etlService.updateParameter(this.parameter.etlId, this.parameter)
             : this.etlService.createParameter(this.parameter.etlId, this.parameter);

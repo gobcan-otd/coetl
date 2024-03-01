@@ -33,4 +33,6 @@
     <include file="config/liquibase/changelog/20221122130015_replace_relation_admin_with_check.xml" relativeToChangelogFile="false" />
     <include file="config/liquibase/changelog/20221229073543_add_executor_tb_executions.xml" relativeToChangelogFile="false" />
     <include file="config/liquibase/changelog/20230307081000_update_procedure_add_usuario_with_existing_rol.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20230703131100_delete_constraint_2.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/20230703131200_delete_duplicate_index.xml" relativeToChangelogFile="false" />
 </databaseChangeLog>

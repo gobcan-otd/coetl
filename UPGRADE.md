@@ -8,6 +8,14 @@
 
 *Se deberá realizar primero la actualización de la versión 1.0.0 a la 2.0.0 y luego desde la 2.0.0 a la 3.0.0*
 
+## 2.4.0 a 2.4.1
+
+  * Se elimina indice duplicado en la tabla usuario sobre el campo login creado en el fichero 00000000000000_initial_schema.xml
+
+  * Las ETL con una ejecución programada sin periodicidad, es decir, la expresión cron no se ejecuta varios días, al tratar de obtener la siguiente fecha de ejecución al ser un valor null da error la conversión del dato.
+
+  * Trim al crear parámetros para controlar que no se creen con espacios en blanco. La página de parámetros globales no tiene paginación y no se ven todos los valores.
+
 ## 2.3.3 a 2.4.0
 
   * Crear nueva propiedad en el application.yml y asignarle el nombre del entorno. La información del entorno en los emails se deshabilita para el entorno PRODUCTION

@@ -9,12 +9,15 @@ import es.gobcan.coetl.service.ParameterService;
 import es.gobcan.coetl.web.rest.dto.ParameterDTO;
 import es.gobcan.coetl.web.rest.mapper.ParameterMapper;
 import es.gobcan.coetl.web.rest.util.HeaderUtil;
+import es.gobcan.coetl.web.rest.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -92,8 +95,8 @@ public class GlobalParameterResource extends AbstractResource {
         LOG.debug("REST Request to find all Global Parameter ");
 
         Page<ParameterDTO> page = parameterService.findAll(pageable).map(parameterMapper::toDto);
-
-        return ResponseEntity.ok().body(page.getContent());
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "api/global-parameters");
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
     @DeleteMapping("/{parameterId}")
