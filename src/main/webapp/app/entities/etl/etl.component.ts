@@ -12,9 +12,9 @@ import { EtlFormComponent } from './etl-form.component';
 import { DatePipe } from '@angular/common';
 import { Organism } from '../../admin/organism/organism.model';
 import { OrganismService } from '../../admin/organism/organism.service';
-import { UsuarioRolOrganismoService } from '../../shared/service/user-rol-organismos/user-rol-organismos.service';
 import { Execution, Result } from '../execution/execution.model';
 import { Roles } from '../../shared/service/roles/roles.model';
+import { UsuarioRolOrganismo } from '../../shared/service/user-rol-organismos';
 
 @Component({
     selector: 'ac-etl',
@@ -34,7 +34,6 @@ export class EtlComponent implements OnInit, OnDestroy {
     predicate: any;
     reverse: any;
     filters: EtlFilter;
-    private organismos: Organism[];
     public showCreateButton: boolean;
     private instance: EtlComponent;
 
@@ -48,8 +47,7 @@ export class EtlComponent implements OnInit, OnDestroy {
         private translateService: TranslateService,
         private datePipe: DatePipe,
         private organismoService: OrganismService,
-        private permissionService: PermissionService,
-        private usuarioRolOrganismoService: UsuarioRolOrganismoService
+        private permissionService: PermissionService
     ) {
         this.routeDataSubscription = this.activatedRoute.data.subscribe((data) => {
             this.page = data['pagingParams'].page;
@@ -69,7 +67,6 @@ export class EtlComponent implements OnInit, OnDestroy {
         this.activatedRoute.queryParams.subscribe((params) => {
             this.filters.fromQueryParams(params).subscribe(() => this.loadAll());
         });
-        this.loadAllOrganismos();
         this.checkShowCreateButton();
         this.registerChangeInEtls();
     }
@@ -99,24 +96,20 @@ export class EtlComponent implements OnInit, OnDestroy {
             .subscribe((res: ResponseWrapper) => this.onSuccess(res.json, res.headers));
     }
 
-    private loadAllOrganismos() {
-        return this.organismoService
-            .findAllOrganism()
-            .subscribe((response: ResponseWrapper) => this.setOrganismosSuccess(response.json));
-    }
-
     private checkShowCreateButton() {
         if (this.principal.userIsAdmin()) {
             this.showCreateButton = true;
         } else {
-            this.usuarioRolOrganismoService.hasOrganismosOnlyLector().subscribe((soloLector) => {
-                this.showCreateButton = !soloLector;
-            });
+            if (
+                this.principal
+                    .getUsuarioRolOrganismo()
+                    .find((uro) => this.permissionService.isTecnico(uro.rol.name))
+            ) {
+                this.showCreateButton = true;
+            } else {
+                this.showCreateButton = false;
+            }
         }
-    }
-
-    private setOrganismosSuccess(data: Organism[]) {
-        this.organismos = data;
     }
 
     sort() {
@@ -185,18 +178,17 @@ export class EtlComponent implements OnInit, OnDestroy {
         this.etls = data;
     }
 
-    getResultBadgeClass(execution: Execution): any {
-        if (execution) {
+    getResultBadgeClass(result: Result): any {
+        if (result) {
             return {
-                'badge-success': execution === Result.SUCCESS,
-                'badge-danger': execution === Result.FAILED,
-                'badge-warning': execution === Result.WAITING,
-                'badge-primary': execution === Result.RUNNING,
-                'badge-default': execution === Result.DUPLICATED
+                'bg-success': result === Result.SUCCESS,
+                'bg-danger': result === Result.FAILED,
+                'bg-warning': result === Result.WAITING,
+                'bg-primary': result === Result.RUNNING,
+                'bg-default': result === Result.DUPLICATED
             };
-        } else {
-            return '';
         }
+        return '';
     }
 
     getResultName(execution: Execution): string {

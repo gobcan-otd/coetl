@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import es.gobcan.coetl.service.AuditEventService;
 import es.gobcan.coetl.web.rest.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
-import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping("/management/audits")
@@ -34,7 +33,7 @@ public class AuditResource extends AbstractResource {
 
     @GetMapping
     @PreAuthorize("@secChecker.puedeConsultarAuditoria(authentication)")
-    public ResponseEntity<List<AuditEvent>> getAll(@ApiParam Pageable pageable) {
+    public ResponseEntity<List<AuditEvent>> getAll(Pageable pageable) {
         Page<AuditEvent> page = auditEventService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/management/audits");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
@@ -42,7 +41,7 @@ public class AuditResource extends AbstractResource {
 
     @GetMapping(params = {"fromDate", "toDate"})
     @PreAuthorize("@secChecker.puedeConsultarAuditoria(authentication)")
-    public ResponseEntity<List<AuditEvent>> getByDates(@RequestParam(value = "fromDate") LocalDate fromDate, @RequestParam(value = "toDate") LocalDate toDate, @ApiParam Pageable pageable) {
+    public ResponseEntity<List<AuditEvent>> getByDates(@RequestParam(value = "fromDate") LocalDate fromDate, @RequestParam(value = "toDate") LocalDate toDate, Pageable pageable) {
 
         Page<AuditEvent> page = auditEventService.findByDates(fromDate.atStartOfDay(ZoneId.systemDefault()).toInstant(), toDate.atStartOfDay(ZoneId.systemDefault()).plusDays(1).toInstant(), pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/management/audits");

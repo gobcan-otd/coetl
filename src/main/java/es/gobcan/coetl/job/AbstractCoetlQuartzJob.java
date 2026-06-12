@@ -9,7 +9,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import es.gobcan.coetl.config.QuartzConstants;
 import es.gobcan.coetl.errors.CustomParameterizedExceptionBuilder;
 import es.gobcan.coetl.errors.ErrorConstants;
-import es.gobcan.coetl.pentaho.service.PentahoExecutionService;
+import es.gobcan.coetl.platform.hop.service.impl.HopExecutionServiceImpl;
+import es.gobcan.coetl.platform.pentaho.service.impl.PentahoExecutionServiceImpl;
 import es.gobcan.coetl.repository.EtlRepository;
 import es.gobcan.coetl.service.ExecutionService;
 
@@ -30,8 +31,12 @@ public abstract class AbstractCoetlQuartzJob extends QuartzJobBean {
         }
     }
 
-    protected PentahoExecutionService getPentahoExecutionService(JobExecutionContext context) {
-        return getApplicationContext(context).getBean(PentahoExecutionService.class);
+    protected PentahoExecutionServiceImpl getPentahoExecutionService(JobExecutionContext context) {
+        return getApplicationContext(context).getBean(PentahoExecutionServiceImpl.class);
+    }
+
+    protected HopExecutionServiceImpl getHopExecutionService(JobExecutionContext context) {
+        return getApplicationContext(context).getBean(HopExecutionServiceImpl.class);
     }
 
     protected EtlRepository getEtlRepository(JobExecutionContext context) {

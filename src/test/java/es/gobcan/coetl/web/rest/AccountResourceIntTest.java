@@ -38,9 +38,9 @@ import es.gobcan.coetl.repository.RolesRepository;
 import es.gobcan.coetl.repository.UsuarioRepository;
 import es.gobcan.coetl.repository.UsuarioRolOrganismoRepository;
 import es.gobcan.coetl.service.MailService;
-import es.gobcan.coetl.service.UsuarioRolOrganismoService;
 import es.gobcan.coetl.service.UsuarioService;
 import es.gobcan.coetl.web.rest.dto.UsuarioDTO;
+import es.gobcan.coetl.web.rest.dto.UsuarioRolOrganismoDTO;
 import es.gobcan.coetl.web.rest.mapper.UsuarioMapper;
 import net.schmizz.sshj.userauth.password.AccountResource;
 
@@ -92,9 +92,6 @@ public class AccountResourceIntTest {
     @Autowired
     UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private UsuarioRolOrganismoService usuarioRolOrganismoService;
-
     private MockMvc restUserMockMvc;
 
     private MockMvc restMvc;
@@ -103,6 +100,8 @@ public class AccountResourceIntTest {
     private UsuarioRolOrganismo rol1;
     private Usuario newUser;
     List<UsuarioRolOrganismo> roles;
+    List<UsuarioRolOrganismoDTO> rolesDto;
+    private UsuarioRolOrganismoDTO rolDto;
 
     private void mockRolSet() {
         newOrganismo = new Organismo();
@@ -118,13 +117,10 @@ public class AccountResourceIntTest {
         rol1 = new UsuarioRolOrganismo();
         rol1.setOrganismo(newOrganismo);
         rol1.setRol(newRol);
-        rol1.setIdUsuario(newUser.getId());
-        rol1.setIdRol(newRol.getId());
-        rol1.setIdOrganismo(newOrganismo.getId());
-        usuarioRolOrganismoRepository.saveAndFlush(rol1);
+        rol1.setUsuario(newUser);
 
     }
-    
+
     private List<UsuarioRolOrganismo> getPermisos() {
         roles = new ArrayList<>();
         roles.add(rol1);
@@ -137,6 +133,7 @@ public class AccountResourceIntTest {
         newUser.setNombre("john");
         newUser.setApellido1("doe");
         newUser.setEmail("john.doe@jhipster.com");
+        newUser.setAllEtlAccess(true);
         usuarioRepository.saveAndFlush(newUser);
     }
 
@@ -144,13 +141,25 @@ public class AccountResourceIntTest {
         newUser.setUsuarioRolOrganismo(getPermisos());
     }
 
+    private void setRolOrganismoDTO() {
+        rolDto = new UsuarioRolOrganismoDTO();
+        rolDto.setOrganismo(rol1.getOrganismo());
+        rolDto.setRol(rol1.getRol());
+    }
+
+    private List<UsuarioRolOrganismoDTO> getPermisosDTO() {
+        rolesDto = new ArrayList<>();
+        rolesDto.add(rolDto);
+        return rolesDto;
+    }
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
-        UsuarioResource accountResource = new UsuarioResource(userRepository, null, userService, usuarioMapper, auditPublisher, usuarioRolOrganismoService);
+        UsuarioResource accountResource = new UsuarioResource(userRepository, null, userService, usuarioMapper, auditPublisher);
 
-        UsuarioResource accountUserMockResource = new UsuarioResource(userRepository, null, mockUserService, usuarioMapper, auditPublisher, usuarioRolOrganismoService);
+        UsuarioResource accountUserMockResource = new UsuarioResource(userRepository, null, mockUserService, usuarioMapper, auditPublisher);
 
         this.restMvc = MockMvcBuilders.standaloneSetup(accountResource).setMessageConverters(httpMessageConverters).setControllerAdvice(exceptionTranslator).build();
         this.restUserMockMvc = MockMvcBuilders.standaloneSetup(accountUserMockResource).build();
@@ -158,6 +167,7 @@ public class AccountResourceIntTest {
         createUser();
         mockRolSet();
         setPermisos();
+        setRolOrganismoDTO();
     }
 
     @Test
@@ -204,6 +214,7 @@ public class AccountResourceIntTest {
         user.setLogin("save-account");
         user.setEmail("save-account@example.com");
         user.setIsAdmin(true);
+        user.setAllEtlAccess(true);
         userRepository.saveAndFlush(user);
         //@formatter:off
 		UsuarioDTO userDTO = UsuarioDTO.builder()
@@ -218,7 +229,8 @@ public class AccountResourceIntTest {
 				.setCreatedDate(null)
 				.setLastModifiedBy(null)
 				.setLastModifiedDate(null)
-				.setAuthorities(roles)
+				.setAuthorities(getPermisosDTO())
+				.setAllEtlAccess(true)
 				.build();
 		//@formatter:on
 
@@ -238,6 +250,7 @@ public class AccountResourceIntTest {
         Usuario user = new Usuario();
         user.setLogin("save-invalid-email");
         user.setEmail("save-invalid-email@example.com");
+        user.setAllEtlAccess(true);
 
         userRepository.saveAndFlush(user);
 
@@ -253,7 +266,7 @@ public class AccountResourceIntTest {
 				.setCreatedDate(null)
 				.setLastModifiedBy(null)
 				.setLastModifiedDate(null)
-				.setAuthorities(roles)
+				.setAuthorities(getPermisosDTO())
 				.build();
 		//@formatter:on
 
@@ -269,12 +282,14 @@ public class AccountResourceIntTest {
         Usuario user = new Usuario();
         user.setLogin("save-existing-email");
         user.setEmail("save-existing-email@example.com");
+        user.setAllEtlAccess(true);
 
         userRepository.saveAndFlush(user);
 
         Usuario anotherUser = new Usuario();
         anotherUser.setLogin("save-existing-email2");
         anotherUser.setEmail("save-existing-email2@example.com");
+        anotherUser.setAllEtlAccess(true);
 
         userRepository.saveAndFlush(anotherUser);
         //@formatter:off
@@ -291,6 +306,7 @@ public class AccountResourceIntTest {
                 .setLastModifiedBy(null)
                 .setLastModifiedDate(null)
                 .setAuthorities(null)
+                .setAllEtlAccess(true)
 				.build();
 		//@formatter:on
 
@@ -304,7 +320,7 @@ public class AccountResourceIntTest {
         Usuario user = new Usuario();
         user.setLogin("save-existing-email-and-login");
         user.setEmail("save-existing-email-and-login@example.com");
-        user.setUsuarioRolOrganismo(roles);
+        user.setAllEtlAccess(true);
 
         userRepository.saveAndFlush(user);
         //@formatter:off
@@ -321,7 +337,8 @@ public class AccountResourceIntTest {
 				.setLastModifiedBy(null)
 				.setLastModifiedDate(null)
 				.setAuthorities(null)
-				.setAuthorities(roles)
+				.setAuthorities(getPermisosDTO())
+				.setAllEtlAccess(true)
 				.build();
 		//@formatter:on
 

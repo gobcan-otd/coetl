@@ -15,12 +15,12 @@
                     </tr>
                 </thead>
                 <tr *ngFor="let execution of executions; let i = index">
-                    <td>{{ execution.planningDate | acDate: 'datetime' }}</td>
+                    <td>{{ execution.planningDate | date: 'dd/MM/yyyy HH:mm' }}</td>
                     <td>
-                        <span class="badge badge-info">{{ getTypeName(execution) }}</span>
+                        <span class="badge bg-info">{{ getTypeName(execution) }}</span>
                     </td>
-                    <td>{{ execution.startDate | acDate: 'datetime' }}</td>
-                    <td>{{ execution.finishDate | acDate: 'datetime' }}</td>
+                    <td>{{ execution.startDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ execution.finishDate | date: 'dd/MM/yyyy HH:mm' }}</td>
                     <td>
                         <span class="badge" [ngClass]="getResultBadgeClass(execution)">{{ getResultName(execution) }}</span>
                     </td>

@@ -1,6 +1,7 @@
 package es.gobcan.coetl.domain;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,10 +13,13 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.validator.constraints.NotBlank;
 
 @Entity
 @Table(name = "tb_organismo")
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class Organismo implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -60,11 +64,31 @@ public class Organismo implements Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Organismo organismo = (Organismo) o;
+        return !(organismo.getId() == null || getId() == null) && Objects.equals(getId(), organismo.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getId());
+    }
+
+    @Override
     public String toString() {
-        return "Organismo{" +
+        //@formatter:off
+        return "Organismo (" +
             "id=" + id +
             ", name='" + name + '\'' +
             ", description='" + description + '\'' +
-            '}';
+                ")";
+        //@formatter:on
     }
 }

@@ -11,7 +11,7 @@
             <dt>
                 <label jhiTranslate="entity.audits.createdDate"></label>
             </dt>
-            <dd>{{ entity.createdDate | acDate: 'datetime' }}</dd>
+            <dd>{{ entity.createdDate | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
         </dl>
         <dl class="jh-entity-details">
             <dt>
@@ -23,7 +23,7 @@
             <dt>
                 <label jhiTranslate="entity.audits.lastModifiedDate"></label>
             </dt>
-            <dd>{{ entity.lastModifiedDate | acDate: 'datetime' }}</dd>
+            <dd>{{ entity.lastModifiedDate | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
         </dl>
         <ng-container *ngIf="canShowDeletionAuditing()">
             <dl class="jh-entity-details">
@@ -36,7 +36,7 @@
                 <dt>
                     <label jhiTranslate="entity.audits.deletionDate"></label>
                 </dt>
-                <dd>{{ entity.deletionDate | acDate: 'datetime' }}</dd>
+                <dd>{{ entity.deletionDate | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
             </dl>
         </ng-container>
     </div>

@@ -44,9 +44,9 @@ export class HealthComponent implements OnInit, OnDestroy {
 
     getBadgeClass(statusState) {
         if (statusState === 'UP') {
-            return 'badge-success';
+            return 'bg-success';
         } else {
-            return 'badge-danger';
+            return 'bg-danger';
         }
     }
 

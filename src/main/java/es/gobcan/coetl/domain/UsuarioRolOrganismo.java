@@ -2,8 +2,8 @@ package es.gobcan.coetl.domain;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -14,8 +14,12 @@ import javax.persistence.PreUpdate;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 @Entity
 @Table(name = "tb_usuario_rol_organismo")
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class UsuarioRolOrganismo implements Serializable {
 
     private static final long serialVersionUID = 6216201787109768159L;
@@ -25,27 +29,17 @@ public class UsuarioRolOrganismo implements Serializable {
     @SequenceGenerator(name = "usuario_rol_organismo_id_seq", sequenceName = "usuario_rol_organismo_id_seq", initialValue = 10)
     private Long id;
 
-    // TODO: COETL-94 - Revisar la declaración de las columnas, pues sin ellas el create y el update no funcionan
-    @Column(name = "id_usuario", nullable = false)
-    private Long idUsuario;
+    @ManyToOne(optional = false, targetEntity = Usuario.class)
+    @JoinColumn(name = "id_usuario")
+    private Usuario usuario;
 
-    @Column(name = "id_rol", nullable = false)
-    private Long idRol;
-
-    @Column(name = "id_organismo", nullable = false)
-    private Long idOrganismo;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "id_rol", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false, targetEntity = Roles.class)
+    @JoinColumn(name = "id_rol")
     private Roles rol;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "id_organismo", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false, targetEntity = Organismo.class)
+    @JoinColumn(name = "id_organismo")
     private Organismo organismo;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "id_usuario", insertable = false, updatable = false)
-    private Usuario usuario;
 
     public Long getId() {
         return id;
@@ -53,6 +47,14 @@ public class UsuarioRolOrganismo implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public Roles getRol() {
@@ -71,37 +73,13 @@ public class UsuarioRolOrganismo implements Serializable {
         this.organismo = organismo;
     }
 
-    public Long getIdUsuario() {
-        return idUsuario;
-    }
-
-    public void setIdUsuario(Long idUsuario) {
-        this.idUsuario = idUsuario;
-    }
-
-    public Long getIdRol() {
-        return idRol;
-    }
-
-    public void setIdRol(Long idRol) {
-        this.idRol = idRol;
-    }
-
-    public Long getIdOrganismo() {
-        return idOrganismo;
-    }
-
-    public void setIdOrganismo(Long idOrganismo) {
-        this.idOrganismo = idOrganismo;
-    }
-
     @PrePersist
     @PreUpdate
     public void updateOrganismoAssociation() {
-        if (rol != null && organismo != null && usuario != null) {
-            this.setIdOrganismo(organismo.getId());
-            this.setIdRol(rol.getId());
-            this.setIdUsuario(usuario.getId());
+        if (this.usuario != null && this.rol != null && this.organismo != null) {
+            this.setUsuario(this.usuario);
+            this.setRol(this.rol);
+            this.setOrganismo(this.organismo);
         }
     }
 

@@ -13,7 +13,7 @@ import {
     Rol,
     Visibility
 } from '../../shared';
-import { Etl, Type } from './etl.model';
+import { Etl, ExecutionPlatform, HopType, LogLevel, PentahoType, Type } from './etl.model';
 import { EtlService } from './etl.service';
 import { EtlDeleteDialogComponent } from './etl-delete-dialog.component';
 import { EtlRestoreDialogComponent } from './etl-restore-dialog.component';
@@ -49,6 +49,8 @@ export class EtlFormComponent implements OnInit, AfterViewInit, OnDestroy, HasTi
     public isAdmin: boolean;
     public visibilityEnum = Visibility;
     public visibilitySelected: Visibility;
+    public executionPlatformEnum = ExecutionPlatform;
+    public logLevelEnum = LogLevel;
 
     @ViewChild(Autosize) purposeContainer: Autosize;
 
@@ -279,5 +281,18 @@ export class EtlFormComponent implements OnInit, AfterViewInit, OnDestroy, HasTi
         } else {
             this.visibilitySelected = Visibility.PUBLICA;
         }
+    }
+
+    public updateType(event) {
+        this.etl.type = undefined;
+    }
+
+    public suggestionType() {
+        if (this.etl.executionPlatform == ExecutionPlatform.PENTAHO) {
+            return PentahoType;
+        } else if (this.etl.executionPlatform == ExecutionPlatform.APACHE_HOP) {
+            return HopType;
+        }
+        return {};
     }
 }

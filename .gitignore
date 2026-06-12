@@ -146,3 +146,10 @@ Desktop.ini
 # ESLint
 ######################
 .eslintcache
+
+######################
+# Las siguientes rutas
+# han sido autogeneradas
+######################
+/.apt_generated/
+/.apt_generated_tests/

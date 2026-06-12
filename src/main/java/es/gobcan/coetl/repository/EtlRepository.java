@@ -21,4 +21,8 @@ public interface EtlRepository extends JpaRepository<Etl, Long> {
     
     List<Etl> findByOrganizationInChargeId(Long id);
 
+    List<Etl> findByOrganizationInChargeIdInAndDeletionDateIsNullAndVisibilityOrderByName(List<Long> id, Boolean visibility);
+
+    List<Etl> findByOrganizationInChargeIdInAndDeletionDateIsNull(List<Long> id);
+
 }

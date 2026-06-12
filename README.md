@@ -9,7 +9,7 @@ Además, podrá encontrar otros anexos de utilidad en los que se detallan alguna
 ## Introducción
 
 ### Descripción de la aplicación
-Consola de ETL es la solución corporativa del Gobierno de Canarias para registrar y ejecutar ficheros ETLs desarrollados mediante la tecnología Pentaho Data Integration, permitiendo incluso programar las ejecuciones de estos procesos y la revisión de sus ejecuciones mediante un histórico.
+Consola de ETL es la solución corporativa del Gobierno de Canarias para registrar y ejecutar ficheros ETLs desarrollados mediante la tecnología Pentaho Data Integration y Apache Hop, permitiendo incluso programar las ejecuciones de estos procesos y la revisión de sus ejecuciones mediante un histórico.
 
 La aplicación está basada en tecnologías web estándar (HTML5, CSS3, Javascript y Java, ver [Más Información](#M%C3%A1s-informaci%C3%B3n)). La implantación de la solución permite llevar a cabo las siguientes tareas: 
 
@@ -24,6 +24,8 @@ En este apartado se especifican los requisitos necesarios, referidos al entorno,
 - Apache Tomcat.  8.5
 - Java. 1.8.x
 - PostgreSQL.  **TODO**
+- Apache Hop
+- Pentaho
 
 
 #### Dependencias
@@ -32,6 +34,7 @@ Los servicios necesarios de manera directa (son atacados directamente por la apl
 - CAS. Se utiliza para llevar a cabo las labores de autenticación.
 - LDAP. Se utiliza para validar las credenciales de los usuarios.
 - Pentaho Data Integration Server. Se utiliza para ejecutar los procesos ETL desarrollados en Pentaho.
+- Apache Hop. Se utiliza para ejecutar los procesos ETL desarrollados en HOP.
 
 
 ### Componentes de la instalación
@@ -94,6 +97,9 @@ Se recalca que, antes de poder crear un usuario se debe de haber creado al menos
 ### Desde la versión 1.1.0 a 1.1.1
 - Modificar el valor de la siguiente propiedad, `pentaho.endpoint`. Ahora hay que añadir la ruta completa hasta el servidor Carte y el protocolo.
 Ejemplo, teniendo anteriormente la propiedad un valor `ruta-carte-server/` ahora debería ser `http://ruta-carte-server/kettle/`.
+### Desde la versión 2.7.1 a 2.8.0
+- Completar las siguientes propiedades:
+   - `apache-hop.host.*`
 
 ----------
 
@@ -146,7 +152,37 @@ Ejemplo, teniendo anteriormente la propiedad un valor `ruta-carte-server/` ahora
    - Usuario propietario de la ruta donde se encuentran los ficheros de recurso adjuntos de las ETLs en el servidor donde se ha instalado el servidor Pentaho.
 - `pentaho.host.ownerGroupResourcesPath`
    - Grupo propietario de la ruta donde se encuentran los ficheros de recurso adjuntos de las ETLs en el servidor donde se ha instalado el servidor Pentaho.
-- `pentaho.host.mainResourcePrefix`
+- `pentaho.mainResourcePrefix`
+  - [...]
+- `apache-hop.endpoint`
+  - Endpoint donde se localiza el servidor de Apache Hop.
+- `apache-hop.auth.user`
+  - Usuario para conectar con el servidor de Apache Hop.
+- `apache-hop.auth.password`
+  - Contraseña del usuario del servidor de Apache Hop.
+- `apache-hop.host.os`
+  - Sistema operativo donde se ha instalado el servidor de Apache Hop, permite los valores UNIX (incluye Mac OS) o WINDOWS. 
+- `apache-hop.host.address`
+  - Dirección del sistema donde se ha instalado el servidor de Apache Hop. 
+- `apache-hop.host.username`
+  - Usuario de conexión al servidor donde se ha instalado el servidor de Apache Hop.
+- `apache-hop.host.password`
+  - Contraseña del usuario de conexión al servidor donde se ha instalado el servidor de Apache Hop.
+- `apache-hop.host.sudoUsername`
+  - Usuario SUDO en el servidor donde se ha instalado el servidor de Apache Hop. 
+- `apache-hop.host.sudoPassword`
+  - Constraseña del usuario SUDO en el servidor donde se ha instalado el servidor de Apache Hop. 
+- `apache-hop.host.sudoPasswordPromptRegex`
+  - Expresión regular para detectar la solicitud de password del usuario SUDO que se muestra en el PROMPT del servidor donde se ha instalado el servidor de Apache Hop, por ejemplo `.*[Pp]assword.*:`:  
+- `apache-hop.host.sftpPath`
+  - Ruta de subida de fichero al servidor donde se ha instalado el servidor de Apache Hop, por ejemplo `/tmp`. 
+- `apache-hop.host.resourcesPath`
+  - Ruta donde se encuentran los ficheros de recurso adjuntos de las ETLs en el servidor donde se ha instalado el servidor de Apache Hop, ejemplo `/servers/pentaho/data-integration/resources`. 
+- `apache-hop.host.ownerUserResourcesPath`
+  - Usuario propietario de la ruta donde se encuentran los ficheros de recurso adjuntos de las ETLs en el servidor donde se ha instalado el servidor de Apache Hop.
+- `apache-hop.host.ownerGroupResourcesPath`
+  - Grupo propietario de la ruta donde se encuentran los ficheros de recurso adjuntos de las ETLs en el servidor donde se ha instalado el servidor de Apache Hop.
+- `apache-hop.mainResourcePrefix`
   - [...]
 - `git.username`
   - Usuario del git dónde está el repositorio

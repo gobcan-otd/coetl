@@ -17,8 +17,13 @@ body, h1, h2, h4 {
     font-weight: $font-weight-light;
 }
 
+h2 {
+    font-size: 1.8rem;
+}
+
 h3 {
     font-weight: $font-weight-bold;
+    font-size: 1.3rem;
 }
 
 /* ==========================================================================
@@ -181,4 +186,24 @@ ui bootstrap tweaks
     outline: none;
 }
 
+table.table > :not(:last-child) > :last-child > th{
+    border-bottom-color: $gray-light;
+}
+
+table.table > :not(caption) > * > * {
+    padding: 0.75rem;
+}
+
 /* jhipster-needle-scss-add-main JHipster will add new css style */
+.btn-default {
+    background-color: $grey-medium;
+}
+
+button.close {
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    -webkit-appearance: none;
+    font-size: 1.5rem;
+}

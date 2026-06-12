@@ -24,7 +24,6 @@ export class EtlExecutionListComponent implements OnInit, OnDestroy {
     predicate: string;
     reverse: boolean;
 
-    currentAccount: Account;
     executions: Execution[];
     eventSubscriber: Subscription;
 
@@ -42,9 +41,6 @@ export class EtlExecutionListComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.principal.identity().then((account) => {
-            this.currentAccount = account;
-        });
         this.loadAll();
         this.registerChangesInEtlExecution();
     }
@@ -67,11 +63,11 @@ export class EtlExecutionListComponent implements OnInit, OnDestroy {
 
     getResultBadgeClass(execution: Execution): any {
         return {
-            'badge-success': execution.result === Result.SUCCESS,
-            'badge-danger': execution.result === Result.FAILED,
-            'badge-warning': execution.result === Result.WAITING,
-            'badge-primary': execution.result === Result.RUNNING,
-            'badge-default': execution.result === Result.DUPLICATED
+            'bg-success': execution.result === Result.SUCCESS,
+            'bg-danger': execution.result === Result.FAILED,
+            'bg-warning': execution.result === Result.WAITING,
+            'bg-primary': execution.result === Result.RUNNING,
+            'bg-secondary': execution.result === Result.DUPLICATED
         };
     }
 

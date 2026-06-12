@@ -11,7 +11,7 @@
 
 	<groupId>es.gobcan.coetl</groupId>
 	<artifactId>coetl</artifactId>
-	<version>2.4.1-SNAPSHOT</version>
+	<version>2.9.5</version>
 	<packaging>war</packaging>
 
 	<name>COETL</name>
@@ -19,7 +19,7 @@
 	<scm>
 		<connection>scm:git:https://git.arte-consultores.com/gobcan/coetl/</connection>
 		<developerConnection>scm:git:https://git.arte-consultores.com/gobcan/coetl/</developerConnection>
-		<tag>HEAD</tag>
+		<tag>20250709123031-v2.9.5</tag>
 		<url>https://git.arte-consultores.com/gobcan/coetl</url>
 	</scm>
 	<issueManagement>
@@ -74,7 +74,6 @@
 		<postgresql.version>42.5.4</postgresql.version>
 		<!-- These remain empty unless the corresponding profile is active -->
 		<profile.no-liquibase />
-		<profile.swagger />
 		<!-- Sonar properties -->
 		<project.testresult.directory>${project.build.directory}/test-results</project.testresult.directory>
 		<quartz.version>2.2.3</quartz.version>
@@ -201,17 +200,6 @@
 			<artifactId>json-path</artifactId>
 			<scope>test</scope>
 			<!-- parent POM declares this dependency in default (compile) scope -->
-		</dependency>
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
-			<version>${springfox.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.mapstruct</groupId>
-					<artifactId>mapstruct</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>
@@ -717,12 +705,6 @@
 			</properties>
 		</profile>
 		<profile>
-			<id>swagger</id>
-			<properties>
-				<profile.swagger>,swagger</profile.swagger>
-			</properties>
-		</profile>
-		<profile>
 			<id>webpack</id>
 			<build>
 				<plugins>
@@ -873,7 +855,7 @@
 				<!-- log configuration -->
 				<logback.loglevel>INFO</logback.loglevel>
 				<!-- default Spring profiles -->
-				<spring.profiles.active>env${profile.swagger}${profile.no-liquibase}</spring.profiles.active>
+				<spring.profiles.active>env${profile.no-liquibase}</spring.profiles.active>
 			</properties>
 		</profile>
 		<profile>

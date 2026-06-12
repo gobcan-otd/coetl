@@ -1,4 +1,4 @@
-<nav class="navbar-inverse fixed-top navbar-toggleable-lg jh-navbar d-flex justify-content-between" [ngClass]="{ 'internal-navbar': isInternalApp }">
+<nav class="navbar-dark fixed-top navbar-expand-lg jh-navbar d-flex justify-content-between" [ngClass]="{ 'internal-navbar': isInternalApp }">
     <div class="navbar-collapse">
         <a class="navbar-brand logo" routerLink="/" (click)="collapseNavbar()">
             <img class="logo-img" src="~images/logo-gobcan.png" alt="Logo" />
@@ -18,13 +18,13 @@
 
                 <!-- jhipster-needle-add-element-to-menu - JHipster will add new menu items here -->
                 <li *ngIf="correctlyLogged()" ngbDropdown class="nav-item dropdown pointer" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-                    <a class="nav-link dropdown-toggle" ngbDropdownToggle href="javascript:void(0);" id="admin-menu">
+                    <a class="nav-link dropdown-toggle" ngbDropdownToggle href="javascript:void(0);" id="admin-menu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <span>
                             <i class="fa fa-user" aria-hidden="true"></i>
                             <b class="caret"></b>
                         </span>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-right" ngbDropdownMenu>
+                    <ul class="dropdown-menu dropdown-menu-right" ngbDropdownMenu aria-labelledby="admin-menu">
                         <li>
                             <a class="dropdown-item" routerLink="settings" routerLinkActive="active" (click)="collapseNavbar()">
                                 <i class="fa fa-fw fa-user" aria-hidden="true"></i>
@@ -85,21 +85,13 @@
                                 <span jhiTranslate="global.menu.admin.logs"></span>
                             </a>
                         </li>
-                        <ng-container *ngIf="swaggerEnabled">
-                            <li *ngIf="permissionService.puedeNavegarOpcionesHerramientas()">
-                                <a class="dropdown-item" routerLink="docs" routerLinkActive="active" (click)="collapseNavbar()">
-                                    <i class="fa fa-fw fa-book" aria-hidden="true"></i>
-                                    <span jhiTranslate="global.menu.admin.apidocs"></span>
-                                </a>
-                            </li>
-                        </ng-container>
                     </ul>
                 </li>
             </ul>
         </div>
         <div class="hidden-xl-up">
             <a
-                class="jh-navbar-toggler"
+                class="jh-navbar-toggler navbar-toggler"
                 href="javascript:void(0);"
                 data-toggle="collapse"
                 data-target="#navbarResponsive"

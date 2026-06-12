@@ -11,7 +11,8 @@ public final class ErrorConstants {
     public static final String ERR_FIELD_VALIDATION = "error.field.validation";
     public static final String ERR_FIELD_CONSTRAINT = "error.field.constraint";
 
-    public static final String USUARIO_EXISTE = "error.usuario-existe";
+    public static final String EMAIL_EXIST = "error.emailUserExists";
+    public static final String USER_EXIST = "error.userExists";
     public static final String USUARIO_NO_VALIDO = "error.userManagement.usuario-no-valido";
 
     public static final String ENTIDAD_NO_ENCONTRADA = "error.entidad-no-encontrada";
@@ -34,6 +35,8 @@ public final class ErrorConstants {
     public static final String ETL_CLONE_REPOSITORY = "error.etl.cloneRepository";
     public static final String ETL_REPLACE_REPOSITORY = "error.etl.replacingRepository";
     public static final String ETL_ERROR_ACCESS_DENIED = "error.etl.accessDenied";
+    public static final String ETL_TYPE_NOT_SUPPORTED = "error.etl.typeNotSupported";
+    public static final String ETL_EXECUTE_ERROR = "error.etl.executingError";
 
     // HEALTH
     public static final String HEALTH_SERVICE_NAME_IS_BLANK = "error.health.serviceName.isBlank";
@@ -46,6 +49,10 @@ public final class ErrorConstants {
     public static final String PARAMETER_EDIT = "error.parameter.edit";
     public static final String PARAMETER_KEY_IS_DUPLICATED_IN_GLOBAL_PARAMETER = "error.parameter.key.isDuplicatedInGlobalParameter";
     public static final String GLOBAL_PARAMETER_KEY_IS_DUPLICATED = "error.parameter.global.key.isDuplicated";
+    public static final String PARAMETER_WRONG_FILE_FORMAT = "error.parameter.file.wrongFormat";
+    public static final String PARAMETER_FILE_SIZE_EXCEEDED = "error.parameter.file.sizeExceeded";
+    public static final String PARAMETER_FILE_ALREADY_EXISTS = "error.parameter.file.alreadyExists";
+    public static final String ERROR_FILE_DESCONOCIDO = "error.parameter.file.unknown";
 
     // ORGANISM
     public static final String ORGANISM_KEY_IS_BLANK = "error.organism.name.isBlank";
@@ -64,6 +71,9 @@ public final class ErrorConstants {
     public static final String EXECUTION_PULL_ERROR = "error.execution.pull";
     public static final String EXECUTION_URI_ERROR = "error.execution.uri";
     public static final String EXECUTION_CREDENTIALS_ERROR = "error.execution.credentials";
+
+    // USER
+    public static final String USER_RESTRICTED_ACCESS_ETL_NO_ETL_SELECTED = "error.user.userRestrictedAccessEtlNoEtlSelected";
 
     // QUARZT
     public static final String QUARTZ_JOB_EXECUTION_ERROR = "error.quartz.jobExecutionError";

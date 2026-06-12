@@ -18,12 +18,14 @@ export class OrganismService {
     }
 
     public findByIdUsuarioRolOrganismo(idUsuario: number): Observable<Organism[]> {
-        return this.http.get(`${this.resourceUrl}/${idUsuario}`).map((res: Response) => res.json());
+        return this.http
+            .get(`${this.resourceUrl}/usuario/${idUsuario}`)
+            .map((res: Response) => res.json());
     }
 
     public findByIdUsuarioRolOrganismoManageEtl(idUsuario: number): Observable<Organism[]> {
         return this.http
-            .get(`${this.resourceUrl}/${idUsuario}/manage`)
+            .get(`${this.resourceUrl}/usuario/${idUsuario}/manage`)
             .map((res: Response) => res.json());
     }
 

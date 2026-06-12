@@ -6,7 +6,7 @@ import es.gobcan.coetl.domain.Organismo;
 
 public interface OrganismoService {
 
-    public List<Organismo> findAll();
+    public List<Organismo> findAll(List<Long> organismosId);
     public List<Organismo> findByIdUsuario(Long idUsuario);
     public List<Organismo> findByIdUsuarioManage(Long idUsuario);
     public Organismo create(Organismo organismo);

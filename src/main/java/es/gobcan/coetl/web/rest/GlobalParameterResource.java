@@ -11,7 +11,6 @@ import es.gobcan.coetl.web.rest.mapper.ParameterMapper;
 import es.gobcan.coetl.web.rest.util.HeaderUtil;
 import es.gobcan.coetl.web.rest.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
-import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -91,7 +90,7 @@ public class GlobalParameterResource extends AbstractResource {
     @GetMapping()
     @Timed
     @PreAuthorize("@secChecker.canReadFile(authentication)")
-    public ResponseEntity<List<ParameterDTO>> findAllGlobalParameters(@ApiParam Pageable pageable) {
+    public ResponseEntity<List<ParameterDTO>> findAllGlobalParameters(Pageable pageable) {
         LOG.debug("REST Request to find all Global Parameter ");
 
         Page<ParameterDTO> page = parameterService.findAll(pageable).map(parameterMapper::toDto);

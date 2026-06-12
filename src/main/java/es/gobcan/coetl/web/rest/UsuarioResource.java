@@ -31,20 +31,16 @@ import es.gobcan.coetl.config.AuditConstants;
 import es.gobcan.coetl.config.Constants;
 import es.gobcan.coetl.config.audit.AuditEventPublisher;
 import es.gobcan.coetl.domain.Usuario;
-import es.gobcan.coetl.domain.UsuarioRolOrganismo;
 import es.gobcan.coetl.errors.ErrorConstants;
 import es.gobcan.coetl.repository.UsuarioRepository;
 import es.gobcan.coetl.service.MailService;
-import es.gobcan.coetl.service.UsuarioRolOrganismoService;
 import es.gobcan.coetl.service.UsuarioService;
 import es.gobcan.coetl.web.rest.dto.UsuarioDTO;
-import es.gobcan.coetl.web.rest.dto.UsuarioRolOrganismoDTO;
 import es.gobcan.coetl.web.rest.mapper.UsuarioMapper;
 import es.gobcan.coetl.web.rest.util.HeaderUtil;
 import es.gobcan.coetl.web.rest.util.PaginationUtil;
 import es.gobcan.coetl.web.rest.vm.ManagedUserVM;
 import io.github.jhipster.web.util.ResponseUtil;
-import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping("/api")
@@ -64,17 +60,14 @@ public class UsuarioResource extends AbstractResource {
 
     private AuditEventPublisher auditPublisher;
 
-    private final UsuarioRolOrganismoService usuarioRolOrganismoService;
-
     public UsuarioResource(UsuarioRepository userRepository, MailService mailService, UsuarioService userService, UsuarioMapper userMapper,
-            AuditEventPublisher auditPublisher, UsuarioRolOrganismoService usuarioRolOrganismoService) {
+            AuditEventPublisher auditPublisher) {
 
         this.userRepository = userRepository;
         this.mailService = mailService;
         this.usuarioService = userService;
         this.usuarioMapper = userMapper;
         this.auditPublisher = auditPublisher;
-        this.usuarioRolOrganismoService = usuarioRolOrganismoService;
     }
 
     @SuppressWarnings("rawtypes")
@@ -86,10 +79,7 @@ public class UsuarioResource extends AbstractResource {
         if (managedUserVM.getId() != null) {
             return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, ErrorConstants.ID_EXISTE, "Un usuario no puede tener ID")).body(null);
         }  else {
-            Usuario newUser = usuarioService.createUsuario(usuarioMapper.userDTOToUser(managedUserVM));
-            usuarioService.setPermission(managedUserVM, newUser.getId());
-            List<UsuarioRolOrganismo> permisos = this.usuarioRolOrganismoService.create(managedUserVM.getUsuarioRolOrganismo());
-            newUser.setUsuarioRolOrganismo(permisos);
+            Usuario newUser = usuarioService.createUsuario(usuarioMapper.toEntity(managedUserVM));
             mailService.sendCreationEmail(newUser);
             auditPublisher.publish(AuditConstants.USUARIO_CREACION, managedUserVM.getLogin());
             return ResponseEntity.created(new URI("/api/usuarios/" + newUser.getLogin())).headers(HeaderUtil.createAlert("userManagement.created", newUser.getLogin())).body(newUser);
@@ -102,16 +92,14 @@ public class UsuarioResource extends AbstractResource {
     public ResponseEntity<UsuarioDTO> updateUser(@Valid @RequestBody ManagedUserVM managedUserVM) {
         log.debug("REST petición para actualizar User : {}", managedUserVM);
         Optional<Usuario> existingUser = userRepository.findOneByLogin(managedUserVM.getLogin().toLowerCase());
-        if (existingUser.isPresent() && (!existingUser.get().getId().equals(managedUserVM.getId()))) {
-            return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, ErrorConstants.USUARIO_EXISTE, "Login ya en uso")).body(null);
-        }
+
         if (!existingUser.isPresent()) {
             existingUser = Optional.ofNullable(userRepository.findOne(managedUserVM.getId()));
         }
 
         Usuario usuario = usuarioMapper.updateFromDTO(existingUser.orElse(null), managedUserVM);
         usuario = usuarioService.updateUsuario(usuario);
-        Optional<UsuarioDTO> updatedUser = Optional.ofNullable(usuarioMapper.userToUserDTO(usuario));
+        Optional<UsuarioDTO> updatedUser = Optional.ofNullable(usuarioMapper.toDto(usuario));
 
         auditPublisher.publish(AuditConstants.USUARIO_EDICION, managedUserVM.getLogin());
         return ResponseUtil.wrapOrNotFound(updatedUser, HeaderUtil.createAlert("userManagement.updated", managedUserVM.getLogin()));
@@ -120,8 +108,8 @@ public class UsuarioResource extends AbstractResource {
     @GetMapping("/usuarios")
     @Timed
     @PreAuthorize("@secChecker.puedeConsultarUsuario(authentication)")
-    public ResponseEntity<List<UsuarioDTO>> getAllUsers(@ApiParam Pageable pageable, @ApiParam(defaultValue = "false") Boolean includeDeleted, @ApiParam(required = false) String query) {
-        final Page<UsuarioDTO> page = usuarioService.getAllUsuarios(pageable, includeDeleted, query).map(usuarioMapper::userToUserDTO);
+    public ResponseEntity<List<UsuarioDTO>> getAllUsers(Pageable pageable, Boolean includeDeleted, String query) {
+        final Page<UsuarioDTO> page = usuarioService.getAllUsuarios(pageable, includeDeleted, query).map(usuarioMapper::toDto);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/usuarios");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
@@ -129,17 +117,9 @@ public class UsuarioResource extends AbstractResource {
     @GetMapping("/usuarios/{login:" + Constants.LOGIN_REGEX + "}")
     @Timed
     @PreAuthorize("@secChecker.puedeConsultarUsuario(authentication)")
-    public ResponseEntity<UsuarioDTO> getUser(@PathVariable String login, @ApiParam(required = false, defaultValue = "false") Boolean includeDeleted) {
+    public ResponseEntity<UsuarioDTO> getUser(@PathVariable String login, Boolean includeDeleted) {
         log.debug("REST petición para obtener  User : {}", login);
-        return ResponseUtil.wrapOrNotFound(usuarioService.getUsuarioWithAuthoritiesByLogin(login, includeDeleted).map(usuarioMapper::userToUserDTO));
-    }
-
-    @GetMapping("/usuarios/{login:" + Constants.LOGIN_REGEX + "}/permisos")
-    @Timed
-    @PreAuthorize("@secChecker.puedeConsultarUsuario(authentication)")
-    public ResponseEntity<List<UsuarioRolOrganismoDTO>> getPermisos(@PathVariable String login, @ApiParam(required = false, defaultValue = "false") Boolean includeDeleted) {
-        log.debug("REST petición para obtener  User : {}", login);
-        return ResponseEntity.ok(usuarioService.getPermisosUsuario(login));
+        return ResponseUtil.wrapOrNotFound(usuarioService.getUsuarioWithAuthoritiesByLogin(login, includeDeleted).map(usuarioMapper::toDto));
     }
 
     @DeleteMapping("/usuarios/{login:" + Constants.LOGIN_REGEX + "}")
@@ -155,7 +135,7 @@ public class UsuarioResource extends AbstractResource {
     @PutMapping("/usuarios/{login}/restore")
     @Timed
     @PreAuthorize("@secChecker.puedeModificarUsuario(authentication, #login)")
-    public ResponseEntity<UsuarioDTO> updateUser(@Valid @PathVariable String login) {
+    public ResponseEntity<UsuarioDTO> restoreUser(@Valid @PathVariable String login) {
         log.debug("REST request to restore User : {}", login);
 
         Optional<Usuario> deletedUser = userRepository.findOneByLogin(login.toLowerCase());
@@ -163,10 +143,10 @@ public class UsuarioResource extends AbstractResource {
             usuarioService.restore(deletedUser.get());
         }
 
-        Optional<UsuarioDTO> updatedUser = Optional.ofNullable(usuarioMapper.userToUserDTO(deletedUser.orElse(null)));
+        Optional<UsuarioDTO> restoredUser = Optional.ofNullable(usuarioMapper.toDto(deletedUser.orElse(null)));
 
         auditPublisher.publish(AuditConstants.USUARIO_ACTIVACION, login);
-        return ResponseUtil.wrapOrNotFound(updatedUser, HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, login));
+        return ResponseUtil.wrapOrNotFound(restoredUser, HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, login));
     }
 
     @GetMapping("/autenticar")
@@ -184,7 +164,8 @@ public class UsuarioResource extends AbstractResource {
         if (databaseUser == null) {
             return new ResponseEntity<>((UsuarioDTO) null, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(usuarioMapper.userToUserDTO(databaseUser), HttpStatus.OK);
+            return new ResponseEntity<>(usuarioMapper.toDto(databaseUser), HttpStatus.OK);
         }
     }
+
 }

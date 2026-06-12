@@ -1,16 +1,22 @@
 package es.gobcan.coetl.domain;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -21,7 +27,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
+import org.hibernate.collection.internal.PersistentList;
 import org.hibernate.validator.constraints.Email;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import es.gobcan.coetl.config.Constants;
 
@@ -59,14 +70,30 @@ public class Usuario extends AbstractVersionedAndAuditingWithDeletionEntity impl
     @Size(min = 3, max = 255)
     @Column(length = 255)
     private String email;
-    
+
     @NotNull
     @ColumnDefault("false")
     @Column(name = "is_admin")
     private Boolean isAdmin = false;
 
-    @OneToMany(mappedBy = "idUsuario", cascade = {CascadeType.MERGE})
+    @OneToMany(fetch = FetchType.LAZY, targetEntity = UsuarioRolOrganismo.class, mappedBy = "usuario",
+            cascade = CascadeType.ALL, orphanRemoval = true)
+    @PrimaryKeyJoinColumn
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @JsonIgnore
     private List<UsuarioRolOrganismo> usuarioRolOrganismo;
+
+    @JoinTable(name = "tb_usuarios_etls", 
+            joinColumns = @JoinColumn(name = "id_usuario", nullable = false), 
+            inverseJoinColumns = @JoinColumn(name = "id_etl", nullable = false))
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<Etl> etls;
+
+    @NotNull
+    @ColumnDefault("false")
+    @Column(name = "all_etl_access")
+    private Boolean allEtlAccess;
 
     public Long getId() {
         return id;
@@ -129,7 +156,31 @@ public class Usuario extends AbstractVersionedAndAuditingWithDeletionEntity impl
     }
 
     public void setUsuarioRolOrganismo(List<UsuarioRolOrganismo> usuarioRolOrganismo) {
-        this.usuarioRolOrganismo = usuarioRolOrganismo;
+        if (usuarioRolOrganismo instanceof PersistentList) {
+            this.usuarioRolOrganismo = usuarioRolOrganismo;
+        } else {
+            if (this.usuarioRolOrganismo == null) {
+                this.usuarioRolOrganismo = new ArrayList<>();
+            }
+            this.usuarioRolOrganismo.clear();
+            this.usuarioRolOrganismo.addAll(usuarioRolOrganismo);
+        }
+    }
+
+    public Boolean getAllEtlAccess() {
+        return allEtlAccess;
+    }
+
+    public void setAllEtlAccess(Boolean allEtlAccess) {
+        this.allEtlAccess = allEtlAccess;
+    }
+
+    public List<Etl> getEtls() {
+        return etls;
+    }
+
+    public void setEtls(List<Etl> etls) {
+        this.etls = etls;
     }
 
     @Override

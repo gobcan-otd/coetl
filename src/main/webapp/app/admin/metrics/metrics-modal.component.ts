@@ -38,13 +38,13 @@ export class JhiMetricsMonitoringModalComponent implements OnInit {
 
     getBadgeClass(threadState) {
         if (threadState === 'RUNNABLE') {
-            return 'badge-success';
+            return 'bg-success';
         } else if (threadState === 'WAITING') {
-            return 'badge-info';
+            return 'bg-info';
         } else if (threadState === 'TIMED_WAITING') {
-            return 'badge-warning';
+            return 'bg-warning';
         } else if (threadState === 'BLOCKED') {
-            return 'badge-danger';
+            return 'bg-danger';
         }
     }
 }

@@ -37,6 +37,17 @@ $nav-shadow: 0 3px 3px $grey-light;
 $side-menu-width: 240px;
 
 // Bootstrap
+$theme-colors: (
+  "primary":    $main-light,
+  "secondary":  $grey-medium,
+  "success":    $green-medium,
+  "info":       $main-medium,
+  "warning":    $severidad-mayor,
+  "danger":     $severidad-menor,
+  "light":      $main-light,
+  "dark":       $main-dark
+);
+
 $gray-lightest: $grey-lightest;
 $gray-lighter: $grey-light;
 $gray-light: $grey-medium;
@@ -134,7 +145,14 @@ $input-line-height: 1.25;
 $tooltip-color:               $grey-darkest;
 $tooltip-bg:                  $white;
 $tooltip-arrow-color:         $grey-medium;
+
+// Variables actualización bootstrap 5.0.0
+$enable-reduced-motion:       true !default;
+$grid-gutter-width:           1.5rem !default;
+$variable-prefix:             bs- !default;
+
 // end bootstrap
+
 $page-padding: 36px;
 $page-padding-left: $page-padding * 2;
 $page-padding-right: $page-padding;

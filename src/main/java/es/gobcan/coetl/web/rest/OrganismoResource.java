@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
@@ -56,15 +57,15 @@ public class OrganismoResource extends AbstractResource {
     @GetMapping()
     @Timed
     @PreAuthorize("@secChecker.canReadEtl(authentication)")
-    public ResponseEntity<List<OrganismoDTO>> findAll() {
+    public ResponseEntity<List<OrganismoDTO>> findAll(@RequestParam(value = "exclusions", required = false) List<Long> organismosId) {
         LOG.debug("REST Request to find all Organism");
-        List<Organismo> healths = organismoService.findAll();
+        List<Organismo> healths = organismoService.findAll(organismosId);
         List<OrganismoDTO> result = organismoMapper.toDto(healths);
 
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/{idUsuario}")
+    @GetMapping("/usuario/{idUsuario}")
     @Timed
     @PreAuthorize("@secChecker.canReadEtl(authentication)")
     public ResponseEntity<List<OrganismoDTO>> findByIdUsuario(@PathVariable Long idUsuario) {
@@ -75,7 +76,7 @@ public class OrganismoResource extends AbstractResource {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/{idUsuario}/manage")
+    @GetMapping("/usuario/{idUsuario}/manage")
     @Timed
     @PreAuthorize("@secChecker.canCreateEtl(authentication)")
     public ResponseEntity<List<OrganismoDTO>> findByIdUsuarioRolOrganismoManageEtl(@PathVariable Long idUsuario) {

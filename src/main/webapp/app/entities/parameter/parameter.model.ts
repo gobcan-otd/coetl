@@ -6,7 +6,22 @@ export enum Type {
 
 export enum Typology {
     GENERIC = 'GENERIC',
+    PASSWORD = 'PASSWORD',
+    FILE = 'FILE'
+}
+
+export enum GlobalTypology {
+    GENERIC = 'GENERIC',
     PASSWORD = 'PASSWORD'
+}
+
+export enum FileType {
+    CSV = '.csv',
+    JSON = '.json',
+    XML = '.xml',
+    TXT = '.txt',
+    XLSX = '.xlsx',
+    XLS = '.xls'
 }
 
 export class Parameter {
@@ -17,6 +32,7 @@ export class Parameter {
         public type?: Type,
         public etlId?: number,
         public typology?: Typology,
-        public description?: string
+        public description?: string,
+        public fileId?: number
     ) {}
 }

@@ -1,9 +1,28 @@
 import { Organism } from '../../admin/organism';
 import { BaseVersionedAndAuditingWithDeletionEntity } from '../../shared/model/base-versioned-auditing-with-deletion-entity';
 
-export enum Type {
+export enum PentahoType {
     TRANSFORMATION = 'TRANSFORMATION',
     JOB = 'JOB'
+}
+
+export enum HopType {
+    WORKFLOW = 'WORKFLOW',
+    PIPELINE = 'PIPELINE'
+}
+
+export const Type = { ...PentahoType, ...HopType };
+export type Type = typeof Type;
+
+export enum ExecutionPlatform {
+    PENTAHO = 'PENTAHO',
+    APACHE_HOP = 'APACHE_HOP'
+}
+
+export enum LogLevel {
+    ERROR = 'ERROR',
+    BASIC = 'BASIC',
+    DEBUG = 'DEBUG'
 }
 
 export class EtlBase extends BaseVersionedAndAuditingWithDeletionEntity {
@@ -16,7 +35,9 @@ export class EtlBase extends BaseVersionedAndAuditingWithDeletionEntity {
         public executionPlanning?: string,
         public nextExecution?: Date,
         public lastExecution?: Date,
-        public visibility?: boolean
+        public visibility?: boolean,
+        public executionPlatform?: ExecutionPlatform,
+        public logLevel?: LogLevel
     ) {
         super();
     }
@@ -43,5 +64,6 @@ export class Etl extends EtlBase {
         public isAttachedFilesChanged?: boolean
     ) {
         super();
+        this.logLevel = LogLevel.ERROR;
     }
 }

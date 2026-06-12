@@ -189,7 +189,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/bower_components/**")
             .antMatchers("/i18n/**")
             .antMatchers("/content/**")
-            .antMatchers("/swagger-ui/index.html")
             .antMatchers("/templates/**")
             .antMatchers("/test/**");
         //@formatter:on
@@ -225,8 +224,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/management/configprops").access("@secChecker.puedeConsultarConfig(authentication)")
             .antMatchers("/management/env").access("@secChecker.puedeConsultarConfig(authentication)")
             .antMatchers("/v2/api-docs/**").permitAll()
-            .antMatchers("/swagger-resources/configuration/ui").permitAll()
-            .antMatchers("/swagger-ui/index.html").access("@secChecker.puedeConsultarApi(authentication)")
             .antMatchers("/**").authenticated();
         //@formatter:on
     }

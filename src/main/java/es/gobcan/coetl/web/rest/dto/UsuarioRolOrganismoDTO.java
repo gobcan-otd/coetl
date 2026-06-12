@@ -2,50 +2,39 @@ package es.gobcan.coetl.web.rest.dto;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonRootName;
+import es.gobcan.coetl.domain.Organismo;
+import es.gobcan.coetl.domain.Roles;
 
-@JsonRootName("permisos")
 public class UsuarioRolOrganismoDTO implements Serializable {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -2767031553485001400L;
-    private Long idUsuario;
-    private Long idRol;
-    private Long idOrganismo;
-    
-    @JsonCreator
-    public UsuarioRolOrganismoDTO(@JsonProperty("idUsuario")Long idUsuario, @JsonProperty("idRol")Long idRol, @JsonProperty("idOrganismo")Long idOrganismo) {
-        this.idUsuario = idUsuario;
-        this.idRol = idRol;
-        this.idOrganismo = idOrganismo;
+    private static final long serialVersionUID = -2729529757088120751L;
+
+    private Long id;
+    private Roles rol;
+    private Organismo organismo;
+
+    public Long getId() {
+        return id;
     }
 
-    public Long getIdUsuario() {
-        return idUsuario;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void setIdUsuario(Long idUsuario) {
-        this.idUsuario = idUsuario;
+    public Roles getRol() {
+        return rol;
     }
 
-    public Long getIdRol() {
-        return idRol;
+    public void setRol(Roles rol) {
+        this.rol = rol;
     }
 
-    public void setIdRol(Long idRol) {
-        this.idRol = idRol;
+    public Organismo getOrganismo() {
+        return organismo;
     }
 
-    public Long getIdOrganismo() {
-        return idOrganismo;
-    }
-
-    public void setIdOrganismo(Long idOrganismo) {
-        this.idOrganismo = idOrganismo;
+    public void setOrganismo(Organismo organismo) {
+        this.organismo = organismo;
     }
 
 }

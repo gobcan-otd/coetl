@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
 import { JhiEventManager } from 'ng-jhipster';
-import { Parameter, Typology } from '../../../entities/parameter';
+import { Parameter, GlobalTypology, Typology } from '../../../entities/parameter';
 import { GloablParameterService } from '../global-parameter.service';
 import { GlobalParameterComponent } from '../global-parameter.component';
 
@@ -15,7 +15,7 @@ import { GlobalParameterComponent } from '../global-parameter.component';
 export class GlobalParameterDialogComponent implements OnInit {
     public parameter: Parameter;
     public isPassword: boolean;
-    public typologyEnum = Typology;
+    public typologyEnum = GlobalTypology;
     public keys = Object.keys;
     public fieldTextType: boolean;
 

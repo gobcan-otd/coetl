@@ -1,0 +1,61 @@
+<h3 jhiTranslate="userManagement.user-etl"></h3>
+<div class="entity-fields">
+    <div class="form-group mb-3">
+        <input type="text" class="form-control" readonly value="{{getTranslationName('userManagement.userEtl.allowEtl')}}" name="field_restric_etl" />
+    </div>
+    <div class="form-group mb-3">
+        <ac-tri-input-switch name="field_restric_etl" [(ngModel)]="allEtlAccess" (onChange)="etlPermissionChange()"></ac-tri-input-switch>
+    </div>
+
+    <div *ngIf="isEdit && hasEtls && !allEtlAccess" class="form-group mb-3">
+        <fieldset class="minWidthClass">
+            <div class="entity-fields">
+                <div class="minWidthClass">
+                    <div class="card xl:flex xl:justify-content-center ulList" style="width: 100%;">
+                        <p-listbox
+                            class="form-control minWidthClass"
+                            [options]="selectorList"
+                            [(ngModel)]="selectedEtls"
+                            optionLabel="name"
+                            [style]="{'max-width':'100%', 'padding-top': '0'}"
+                            [listStyle]="{'max-height': '10rem'}"
+                            [dataKey]="id"
+                            [multiple]="true"
+                            [filter]="true"
+                            [checkbox]="true"
+                            (onChange)="onChange()"
+                            [metaKeySelection]="false"
+                        >
+                        </p-listbox>
+                    </div>
+                </div>
+            </div>
+            <div class="entity-fields"></div>
+        </fieldset>
+    </div>
+
+    <div *ngIf="!isEdit && !hasSelectedEtls() && !allEtlAccess else emptyList" class="form-group mb-3">
+        <ng-container>
+            <div class="minWidthClass">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;" jhiTranslate="userManagement.userEtl.etlEnableMessage"></th>
+                        </tr>
+                    </thead>
+                    <tr *ngFor="let etl of sort(selectedEtls); let i = index">
+                        <td>{{ etl.name }}</td>
+                    </tr>
+                </table>
+            </div>
+        </ng-container>
+    </div>
+
+    <ng-template #emptyList>
+        <div class="empty-list" *ngIf="!isEdit && !allEtlAccess">
+            <span jhiTranslate="userManagement.userEtl.list.emptyListMessage"></span>
+        </div>
+    </ng-template>
+
+    <div></div>
+</div>

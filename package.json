@@ -18,7 +18,7 @@
         "@angular/platform-browser-dynamic": "4.2.6",
         "@angular/router": "4.2.6",
         "@ng-bootstrap/ng-bootstrap": "1.0.0-alpha.28",
-        "bootstrap": "4.0.0-alpha.6",
+        "bootstrap": "5.0.0",
         "core-js": "2.4.1",
         "expose-loader": "^0.7.3",
         "font-awesome": "4.7.0",
@@ -33,7 +33,6 @@
         "reflect-metadata": "0.1.10",
         "rxjs": "5.4.2",
         "sticky-table-headers": "^0.1.19",
-        "swagger-ui": "2.2.10",
         "tether": "1.4.0",
         "zone.js": "0.8.13"
     },

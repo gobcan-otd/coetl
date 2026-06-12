@@ -1,8 +1,13 @@
 package es.gobcan.coetl.web.rest.mapper;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import es.gobcan.coetl.domain.Etl;
 import es.gobcan.coetl.domain.Execution;
@@ -45,6 +50,8 @@ public abstract class EtlMapper implements EntityMapper<EtlDTO, Etl> {
         entity.setExecutionPlanning(dto.getExecutionPlanning());
         entity.setNextExecution(dto.getNextExecution());
         entity.setVisibility(dto.isVisibility());
+        entity.setExecutionPlatform(dto.getExecutionPlatform());
+        entity.setLogLevel(dto.getLogLevel());
 
         entity.setUriRepository(dto.getUriRepository());
 
@@ -76,6 +83,8 @@ public abstract class EtlMapper implements EntityMapper<EtlDTO, Etl> {
         baseDto.setDeletedBy(entity.getDeletedBy());
         baseDto.setDeletionDate(entity.getDeletionDate());
         baseDto.setVisibility(entity.isVisibility());
+        baseDto.setExecutionPlatform(entity.getExecutionPlatform());
+        baseDto.setLogLevel(entity.getLogLevel());
 
         baseDto.setOptLock(entity.getOptLock());
 
@@ -101,6 +110,14 @@ public abstract class EtlMapper implements EntityMapper<EtlDTO, Etl> {
             execution = executionRepository.findFirstByEtlIdOrderByPlanningDateDesc(entity.getId());
         }
         return toBaseDto(entity, execution);
+    }
+
+    public List<EtlBaseDTO> toBaseDto(List<Etl> entities) {
+        if (CollectionUtils.isEmpty(entities)) {
+            return Collections.emptyList();
+        }
+
+        return entities.stream().map(etl -> toBaseDto(etl, null, null)).collect(Collectors.toList());
     }
 
 }

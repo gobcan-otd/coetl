@@ -20,8 +20,7 @@ import {
     StickyTableHeaderDirective,
     TriInputSwitchComponent,
     CurrencyComponent,
-    MultiInputComponent,
-    AcDatePipe
+    MultiInputComponent
 } from '.';
 
 @NgModule({
@@ -43,8 +42,7 @@ import {
         CurrencyComponent,
         SpinnerComponent,
         StepsComponent,
-        MultiInputComponent,
-        AcDatePipe
+        MultiInputComponent
     ],
     providers: [
         JhiLanguageHelper,
@@ -72,8 +70,7 @@ import {
         CurrencyComponent,
         SpinnerComponent,
         StepsComponent,
-        MultiInputComponent,
-        AcDatePipe
+        MultiInputComponent
     ]
 })
 export class CoetlSharedCommonModule {}

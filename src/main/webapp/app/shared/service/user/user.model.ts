@@ -1,3 +1,4 @@
+import { Etl } from '../../../entities/etl';
 import { BaseVersionedAndAuditingWithDeletionEntity } from '../../model/base-versioned-auditing-with-deletion-entity';
 import { UsuarioRolOrganismo } from '../user-rol-organismos/user-rol-organismos.model';
 
@@ -10,6 +11,8 @@ export class User extends BaseVersionedAndAuditingWithDeletionEntity {
     public email?: string;
     public isAdmin?: boolean;
     public usuarioRolOrganismo?: UsuarioRolOrganismo[];
+    public etls: Etl[];
+    public allEtlAccess?: boolean;
 
     constructor(
         id?: any,
@@ -19,7 +22,9 @@ export class User extends BaseVersionedAndAuditingWithDeletionEntity {
         apellido2?: string,
         email?: string,
         isAdmin?: boolean,
-        usuarioRolOrganismo?: UsuarioRolOrganismo[]
+        usuarioRolOrganismo?: UsuarioRolOrganismo[],
+        etls?: Etl[],
+        allEtlAccess?: boolean
     ) {
         super();
         this.id = id ? id : null;
@@ -29,6 +34,8 @@ export class User extends BaseVersionedAndAuditingWithDeletionEntity {
         this.apellido2 = apellido2 ? apellido2 : null;
         this.email = email ? email : null;
         this.isAdmin = isAdmin ? isAdmin : null;
-        this.usuarioRolOrganismo = usuarioRolOrganismo ? usuarioRolOrganismo : null;
+        this.usuarioRolOrganismo = usuarioRolOrganismo ? usuarioRolOrganismo : [];
+        this.etls = etls ? etls : [];
+        this.allEtlAccess = allEtlAccess ? allEtlAccess : null;
     }
 }

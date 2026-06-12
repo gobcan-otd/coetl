@@ -1,14 +1,11 @@
 package es.gobcan.coetl.service;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import es.gobcan.coetl.domain.Usuario;
-import es.gobcan.coetl.web.rest.dto.UsuarioRolOrganismoDTO;
-import es.gobcan.coetl.web.rest.vm.ManagedUserVM;
 
 public interface UsuarioService {
 
@@ -31,9 +28,5 @@ public interface UsuarioService {
     Usuario getUsuarioWithAuthorities();
 
     String[] getNotRepeatEmailsUsuarioAdmin();
-
-    List<UsuarioRolOrganismoDTO> getPermisosUsuario(String login);
-
-    public void setPermission(ManagedUserVM managedUserVM, Long userId);
 
 }

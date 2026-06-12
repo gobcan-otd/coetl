@@ -56,7 +56,7 @@
         <fieldset [disabled]="!isEditMode()">
             <h3 jhiTranslate="coetlApp.etl.sections.identification"></h3>
             <div class="entity-fields">
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label class="form-control-label" jhiTranslate="coetlApp.etl.code.label" for="field_code"></label>
                     <input
                         type="text"
@@ -73,7 +73,7 @@
                         <small class="form-text text-danger" [hidden]="!editForm.controls.code?.errors?.required" jhiTranslate="entity.validation.required"> </small>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label class="form-control-label" jhiTranslate="coetlApp.etl.name.label" for="field_name"></label>
                     <input
                         type="text"
@@ -88,13 +88,34 @@
                         <small class="form-text text-danger" [hidden]="!editForm.controls.name?.errors?.required" jhiTranslate="entity.validation.required"> </small>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group mb-3">
+                    <label class="form-control-label" for="executionPlatform" jhiTranslate="coetlApp.etl.executionPlatform.label"></label>
+                    <ac-autocomplete-enum
+                        name="executionPlatform"
+                        [(ngModel)]="etl.executionPlatform"
+                        (ngModelChange)="updateType($event)"
+                        [suggestionsEnum]="executionPlatformEnum"
+                        [translationPath]="'coetlApp.etl.executionPlatform.'"
+                        required
+                    ></ac-autocomplete-enum>
+                </div>
+                <div class="form-group mb-3">
                     <label class="form-control-label" jhiTranslate="coetlApp.etl.type.label" for="field_type"></label>
                     <ac-autocomplete-enum
                         name="type"
                         [(ngModel)]="etl.type"
-                        [suggestionsEnum]="typeEnum"
+                        [suggestionsEnum]="suggestionType()"
                         [translationPath]="'coetlApp.etl.type.'"
+                        [required]="true"
+                    ></ac-autocomplete-enum>
+                </div>
+                <div class="form-group mb-3 ml-6">
+                    <label class="form-control-label" jhiTranslate="coetlApp.etl.logLevel.label" for="field_type"></label>
+                    <ac-autocomplete-enum
+                        name="logLevel"
+                        [(ngModel)]="etl.logLevel"
+                        [suggestionsEnum]="logLevelEnum"
+                        [translationPath]="'coetlApp.etl.logLevel.'"
                         [required]="true"
                     ></ac-autocomplete-enum>
                 </div>
@@ -103,12 +124,12 @@
                         <label jhiTranslate="coetlApp.etl.state.label"></label>
                     </dt>
                     <dd>
-                        <span class="badge" [ngClass]="{ 'badge-success': !etl.isDeleted(), 'badge-danger': etl.isDeleted() }">
+                        <span class="badge" [ngClass]="{ 'bg-success': !etl.isDeleted(), 'bg-danger': etl.isDeleted() }">
                             {{ getDeletedMessage(etl) }}
                         </span>
                     </dd>
                 </dl>
-                <div class="form-group" *ngIf="isAdmin">
+                <div class="form-group mb-3" *ngIf="isAdmin">
                     <label class="form-control-label" jhiTranslate="coetlApp.etl.visibility.label" for="visibility_type"></label>
                     <ac-autocomplete-enum
                         name="visibility"
@@ -120,7 +141,7 @@
                     >
                     </ac-autocomplete-enum>
                 </div>
-                <div class="form-group full-width">
+                <div class="form-group mb-3 full-width">
                     <label class="form-control-label" jhiTranslate="coetlApp.etl.purpose.label" for="field_purpose"></label>
                     <textarea
                         [disabled]="!isEditMode()"
@@ -134,7 +155,7 @@
                         #purposeContainer
                     ></textarea>
                 </div>
-                <div class="form-group full-width">
+                <div class="form-group mb-3 full-width">
                     <label class="form-control-label" jhiTranslate="coetlApp.etl.comments.label" for="field_comments"></label>
                     <textarea
                         [disabled]="!isEditMode()"
@@ -153,7 +174,7 @@
         <fieldset [disabled]="!isEditMode()">
             <h3 jhiTranslate="coetlApp.etl.sections.uriRepository"></h3>
             <div class="entity-fields">
-                <div class="form-group full-width">
+                <div class="form-group mb-3 full-width">
                     <label class="form-control-label" jhiTranslate="coetlApp.etl.uriRepository.label" for="field_repository"></label>
                     <input
                         type="text"
@@ -174,7 +195,7 @@
         <fieldset [disabled]="!isEditMode()">
             <h3 jhiTranslate="coetlApp.etl.sections.inCharge"></h3>
             <div class="entity-fields">
-                <div class="form-group full-width">
+                <div class="form-group mb-3 full-width">
                     <label class="form-control-label" jhiTranslate="coetlApp.etl.organizationInCharge.label" for="field_organizationInCharge"></label>
                     <ac-autocomplete
                         [multiple]="false"
@@ -190,7 +211,7 @@
                     </ac-autocomplete>
                 </div>
 
-                <div class="form-group full-width">
+                <div class="form-group mb-3 full-width">
                     <label class="form-control-label" jhiTranslate="coetlApp.etl.functionalInCharge.label" for="field_functionalInCharge"></label>
                     <textarea
                         [disabled]="!isEditMode()"
@@ -205,7 +226,7 @@
                         #functionalInChargeContainer
                     ></textarea>
                 </div>
-                <div class="form-group full-width">
+                <div class="form-group mb-3 full-width">
                     <label class="form-control-label" jhiTranslate="coetlApp.etl.technicalInCharge.label" for="field_technicalInCharge"></label>
                     <textarea
                         [disabled]="!isEditMode()"
@@ -225,7 +246,7 @@
         <fieldset [disabled]="!isEditMode()">
             <h3 jhiTranslate="coetlApp.etl.sections.planning"></h3>
             <div class="entity-fields">
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label class="form-control-label" for="field_executionPlanning">
                         <span jhiTranslate="coetlApp.etl.executionPlanning.label"></span>
                         <span (click)="help()">
@@ -245,9 +266,9 @@
                     <dt>
                         <label jhiTranslate="coetlApp.etl.nextExecution.label"></label>
                     </dt>
-                    <dd>{{ etl.nextExecution | acDate: 'datetime' }}</dd>
+                    <dd>{{ etl.nextExecution | date: 'dd/MM/yyyy HH:mm' }}</dd>
                 </dl>
-                <div class="form-group full-width">
+                <div class="form-group mb-3 full-width">
                     <label class="form-control-label" jhiTranslate="coetlApp.etl.executionDescription.label" for="field_executionDescription"></label>
                     <textarea
                         [disabled]="!isEditMode()"

@@ -1,0 +1,301 @@
+package es.gobcan.coetl.platform.common.service.impl;
+
+import static es.gobcan.coetl.platform.pentaho.service.util.RemoteConnectionUtils.executeCommand;
+import static es.gobcan.coetl.platform.pentaho.service.util.RemoteConnectionUtils.getSudoDestinationOptions;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.xebialabs.overthere.Overthere;
+import com.xebialabs.overthere.OverthereConnection;
+import com.xebialabs.overthere.OverthereFile;
+import com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler;
+
+import es.gobcan.coetl.config.GitProperties;
+import es.gobcan.coetl.config.common.PlatformHost;
+import es.gobcan.coetl.domain.Etl;
+import es.gobcan.coetl.domain.Parameter;
+import es.gobcan.coetl.domain.Parameter.Typology;
+import es.gobcan.coetl.errors.CustomParameterizedExceptionBuilder;
+import es.gobcan.coetl.errors.ErrorConstants;
+import es.gobcan.coetl.platform.common.PlatformPropertiesComponent;
+import es.gobcan.coetl.platform.common.service.GitService;
+import es.gobcan.coetl.platform.pentaho.service.util.RemoteConnectionUtils.SftpException;
+import es.gobcan.coetl.repository.FileRepository;
+import es.gobcan.coetl.repository.ParameterRepository;
+
+@Service
+public class GitServiceImpl implements GitService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitServiceImpl.class);
+
+    private static final String REPOSITORY_FOLDER_NAME = "repository";
+    private static final String REPOSITORY_FOLDER_BACKUP_NAME = "repositoryBackup";
+    private static final String METADATA_FOLDER_NAME = "metadata"; // Usado en repositorios de ETLs para Hop
+    private static final String ERROR_CREDENCIALES_GIT = "An error ocurred encoding git credentials";
+    private static final String ERROR_URI_INCORRECT = "An error ocurred with URI repository in ETL with code \"%s\"";
+    private static final String ERROR_PULL = "An error ocurred executing shell commands while pulling repository";
+    private static final String ERROR_FILE_PARAMETER = "An error ocurred while writing parameter files in directory";
+    private static final String ERROR_FILE_DESCONOCIDO = "An error ocurred while trying to move the file";
+    private static final String ERROR_DESCONOCIDO = "Unknown error ocurred while pulling repository \"%s\"";
+
+    @Autowired
+    private PlatformPropertiesComponent platformProperties;
+
+    @Autowired
+    private GitProperties gitProperties;
+
+    @Autowired
+    private ParameterRepository parameterRepository;
+
+    @Autowired
+    private FileRepository fileRepository;
+
+    @Override
+    public String cloneRepository(Etl etl) {
+        OverthereConnection sudoDestinationConnection = Overthere.getConnection("ssh", getSudoDestinationOptions(platformProperties.determinePropertiesClass(etl).getHost()));
+        String path = platformProperties.determinePropertiesClass(etl).getHost().getResourcesPath().concat("/").concat(etl.getCode());
+
+        try {
+            executeCommand(sudoDestinationConnection, "mkdir", "-p", path);
+            executeCommand(sudoDestinationConnection, "git", "-C", path, "clone", "--branch", gitProperties.getBranch(), getUrlRepositoryWithCredentials(etl.getUriRepository()));
+            executeCommand(sudoDestinationConnection, "mv", path.concat("/").concat(getFolderRepositoryName(etl)), path.concat("/").concat(REPOSITORY_FOLDER_NAME));
+            executeCommand(sudoDestinationConnection, "git", "-C", path.concat("/").concat(REPOSITORY_FOLDER_NAME), "remote", "set-url", "origin", etl.getUriRepository());
+            changeOwnerUnzippedFiles(sudoDestinationConnection, path, etl);
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.error("An error ocurred encoding git credentials", e);
+            return null;
+        } catch (MalformedURLException e) {
+            LOGGER.error("An error ocurred with URI repository in ETL with code {}", etl.getCode(), e);
+            return null;
+        } catch (SftpException e) {
+            LOGGER.error("An error ocurred executing shell commands while cloning repository");
+            return null;
+        } catch (Exception e) {
+            LOGGER.error("Unknown error ocurred while clone repository {}", etl.getUriRepository(), e);
+            return null;
+        } finally {
+            sudoDestinationConnection.close();
+        }
+
+        return path.concat("/").concat(REPOSITORY_FOLDER_NAME);
+    }
+    
+	public void checkFileParameters(Etl etl, String originalPath, String newPath, OverthereConnection sudoDestinationConnection) {
+		List<Parameter> listaParametro = parameterRepository.findAllByEtlIdAndTypology(etl.getId(), Typology.FILE);
+		for (Parameter param : listaParametro) {
+			es.gobcan.coetl.domain.File file = fileRepository.findOneById(param.getFile());
+			String originalFilePath = originalPath.concat("/").concat(file.getName());
+			String newFilePath = newPath.concat("/").concat(file.getName());
+			try {
+				File f = new File(newFilePath);
+				if (!f.exists()) {
+					executeCommand(sudoDestinationConnection, "cp", originalFilePath, newFilePath);
+					changeOwnerUnzippedFiles(sudoDestinationConnection, newFilePath, etl);
+				} else {
+					throw new CustomParameterizedExceptionBuilder().message(ERROR_FILE_PARAMETER)
+							.code(ErrorConstants.PARAMETER_FILE_ALREADY_EXISTS).build();
+				}
+			} catch (Exception e) {
+				LOGGER.error("Error ocurred while moving file. {}", file.getName(), e);
+				throw new CustomParameterizedExceptionBuilder().message(ERROR_FILE_DESCONOCIDO)
+				.code(ErrorConstants.ERROR_FILE_DESCONOCIDO).build();
+			}
+		}
+
+	}
+
+    @Override
+    public void updateRepository(Etl etl) {
+        OverthereConnection sudoDestinationConnection = Overthere.getConnection("ssh", getSudoDestinationOptions(platformProperties.determinePropertiesClass(etl).getHost()));
+        String path = platformProperties.determinePropertiesClass(etl).getHost().getResourcesPath().concat("/").concat(etl.getCode()).concat("/").concat(REPOSITORY_FOLDER_NAME);
+        try {
+            executeCommand(sudoDestinationConnection, "git", "-C", path, "remote", "set-url", "origin", getUrlRepositoryWithCredentials(etl.getUriRepository()));
+            executeCommand(sudoDestinationConnection, "git", "-C", path, "pull");
+            executeCommand(sudoDestinationConnection, "git", "-C", path, "remote", "set-url", "origin", etl.getUriRepository());
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.error(ERROR_CREDENCIALES_GIT);
+            throw new CustomParameterizedExceptionBuilder().message(ERROR_CREDENCIALES_GIT).code(ErrorConstants.EXECUTION_CREDENTIALS_ERROR).build();
+        } catch (MalformedURLException e) {
+            LOGGER.error(String.format(ERROR_URI_INCORRECT, etl.getCode()), e);
+            throw new CustomParameterizedExceptionBuilder().message(String.format(ERROR_URI_INCORRECT, etl.getCode()))
+            .code(ErrorConstants.EXECUTION_URI_ERROR).build();
+        }catch (SftpException e) {
+            LOGGER.error(ERROR_PULL, e);
+            throw new CustomParameterizedExceptionBuilder().message(ERROR_PULL).code(ErrorConstants.EXECUTION_PULL_ERROR).build();
+        } catch (Exception e) {
+            LOGGER.error(String.format(ERROR_DESCONOCIDO, etl.getUriRepository()), e);
+            throw new CustomParameterizedExceptionBuilder().message(String.format(ERROR_DESCONOCIDO, etl.getUriRepository()))
+            .code(ErrorConstants.EXECUTION_UNKNOWN_ERROR).build();
+        } finally {
+            sudoDestinationConnection.close();
+        }
+    }
+
+    @Override
+    public String replaceRepository(Etl etl, String oldPath) {
+        OverthereConnection sudoDestinationConnection = Overthere.getConnection("ssh", getSudoDestinationOptions(platformProperties.determinePropertiesClass(etl).getHost()));
+        String path = oldPath.replace("/repository","");
+        String newRepository = null; 
+         
+        try {
+            executeCommand(sudoDestinationConnection, "mv", path.concat("/").concat(REPOSITORY_FOLDER_NAME), path.concat("/").concat(REPOSITORY_FOLDER_BACKUP_NAME));
+            
+            newRepository = cloneRepository(etl);
+            if (newRepository == null) {
+                executeCommand(sudoDestinationConnection, "rm", "-Rf", path.concat("/").concat(REPOSITORY_FOLDER_NAME));
+                executeCommand(sudoDestinationConnection, "mv", path.concat("/").concat(REPOSITORY_FOLDER_BACKUP_NAME), path.concat("/").concat(REPOSITORY_FOLDER_NAME));
+            } else {
+            	checkFileParameters(etl, path.concat("/").concat(REPOSITORY_FOLDER_BACKUP_NAME), newRepository, sudoDestinationConnection);
+                executeCommand(sudoDestinationConnection, "rm", "-Rf", path.concat("/").concat(REPOSITORY_FOLDER_BACKUP_NAME));
+            }
+        } catch (Exception e) {
+            LOGGER.error("Unknown error ocurred while replacing repository {}", etl.getUriRepository());
+            return null;
+        } finally {
+            sudoDestinationConnection.close();
+        }
+
+        return newRepository;
+    }
+    
+    
+    public void deleteRepository(Etl etl) {
+    	OverthereConnection sudoDestinationConnection = Overthere.getConnection("ssh", getSudoDestinationOptions(platformProperties.determinePropertiesClass(etl).getHost()));
+        String path = platformProperties.determinePropertiesClass(etl).getHost().getResourcesPath().concat("/").concat(etl.getCode());
+        try {
+        	executeCommand(sudoDestinationConnection, "rm", "-Rf", path);
+        } catch (Exception e) {
+            LOGGER.error(String.format(ERROR_DESCONOCIDO, etl.getUriRepository()), e);
+            throw new CustomParameterizedExceptionBuilder().message(String.format(ERROR_DESCONOCIDO, etl.getUriRepository()))
+            .code(ErrorConstants.EXECUTION_UNKNOWN_ERROR).build();
+        } finally {
+            sudoDestinationConnection.close();
+        }
+    }
+
+    @Override
+    public String getMainFileContent(Etl etl) throws UnsupportedEncodingException {
+        OverthereConnection sudoSourceConnection = Overthere.getConnection("ssh", getSudoDestinationOptions(platformProperties.determinePropertiesClass(etl).getHost()));
+
+        CapturingOverthereExecutionOutputHandler oh = CapturingOverthereExecutionOutputHandler.capturingHandler();
+        String basePath = platformProperties.determinePropertiesClass(etl).getHost().getResourcesPath().concat("/").concat(etl.getCode()).concat("/" + REPOSITORY_FOLDER_NAME + "/");
+
+        executeCommand(sudoSourceConnection, oh, "ls", basePath.concat(platformProperties.determinePropertiesClass(etl).getMainResourcePrefix() + "*"));
+
+        //Se asume que siempre habrá un fichero main* y que la ruta saldrá la última de las líneas volcadas
+        String mainFileNamePath = oh.getOutputLines().get( oh.getOutputLines().size()-1 ).trim();
+        
+        OverthereFile sourceMainFile = sudoSourceConnection.getFile(mainFileNamePath);
+        String result = new BufferedReader(new InputStreamReader(sourceMainFile.getInputStream(), "UTF-8"))
+            .lines().collect(Collectors.joining("\n"));
+
+        sudoSourceConnection.close();
+        return result;
+    }
+
+    @Override
+    public String getMainFileName(Etl etl) {
+        OverthereConnection sudoSourceConnection = Overthere.getConnection("ssh", getSudoDestinationOptions(platformProperties.determinePropertiesClass(etl).getHost()));
+
+        CapturingOverthereExecutionOutputHandler oh = CapturingOverthereExecutionOutputHandler.capturingHandler();
+        String basePath = platformProperties.determinePropertiesClass(etl).getHost().getResourcesPath().concat("/").concat(etl.getCode()).concat("/" + REPOSITORY_FOLDER_NAME + "/");
+
+        executeCommand(sudoSourceConnection, oh, "ls", basePath.concat(platformProperties.determinePropertiesClass(etl).getMainResourcePrefix() + "*"));
+
+      //Se asume que siempre habrá un fichero main* y que la ruta saldrá la última de las líneas volcadas
+        String mainFileNamePath = oh.getOutputLines().get( oh.getOutputLines().size()-1 ).trim();
+        
+        sudoSourceConnection.close();
+
+        return mainFileNamePath.substring(mainFileNamePath.lastIndexOf('/') + 1).split("\\.")[0];
+    }
+
+    @Override
+    public Map<String, List<String>> getEtlMetadataInfo(Etl etl) throws UnsupportedEncodingException {
+        PlatformHost platformHost= platformProperties.determinePropertiesClass(etl).getHost();
+        OverthereConnection sudoSourceConnection = Overthere.getConnection("ssh", getSudoDestinationOptions(platformHost));
+
+        CapturingOverthereExecutionOutputHandler oh = CapturingOverthereExecutionOutputHandler.capturingHandler();
+        String basePath = platformProperties.determinePropertiesClass(etl).getHost().getResourcesPath().concat("/").concat(etl.getCode()).concat("/" + REPOSITORY_FOLDER_NAME + "/");
+
+        // TODO: Cuando los usuarios del propierties host de apache hop son diferentes, la lista resultante "oh" viene con la sentencia para pedir el pass de sudo
+        Map<String, List<String>> result = new HashMap<>();
+        int initLoop = 1;
+        if (platformHost.getUsername().equals(platformHost.getSudoUsername())) {
+            initLoop = 0;
+        }
+
+        try {
+            executeCommand(sudoSourceConnection, oh, "ls -1", basePath.concat(METADATA_FOLDER_NAME));
+        } catch (Exception e) {
+            LOGGER.error("Metadata folder don't exists", e);
+            return result;
+        } finally {
+            sudoSourceConnection.close();
+        }
+
+        for (int i = initLoop; i < oh.getOutputLines().size(); i++) {
+            String metadataSubFolder = oh.getOutputLines().get(i);
+            result.put(metadataSubFolder, getFilesContentFromFolder(etl, basePath.concat(METADATA_FOLDER_NAME).concat("/").concat(metadataSubFolder), initLoop));
+        }
+
+        return result;
+    }
+
+    private List<String> getFilesContentFromFolder(Etl etl, String folder, int initLoop) {
+        List<String> result = new ArrayList<>();
+        OverthereConnection sudoSourceConnection = Overthere.getConnection("ssh", getSudoDestinationOptions(platformProperties.determinePropertiesClass(etl).getHost()));
+        CapturingOverthereExecutionOutputHandler oh = CapturingOverthereExecutionOutputHandler.capturingHandler();
+
+        // TODO: Cuando los usuarios del propierties host de apache hop son diferentes, la lista resultante "oh" viene con la sentencia para pedir el pass de sudo
+        executeCommand(sudoSourceConnection, oh, "ls -1", folder);
+        for (int i = initLoop; i < oh.getOutputLines().size(); i++) {
+            OverthereFile metadataInfo = sudoSourceConnection.getFile(folder.concat("/").concat(oh.getOutputLines().get(i)));
+            String content = new BufferedReader(new InputStreamReader(metadataInfo.getInputStream(), StandardCharsets.UTF_8))
+                    .lines().collect(Collectors.joining("\n"));
+            result.add(content);
+        }
+
+        sudoSourceConnection.close();
+        return result;
+    }
+
+    private String getUrlRepositoryWithCredentials(String urlRepository) throws UnsupportedEncodingException, MalformedURLException {
+        URL url = new URL(urlRepository);
+        return url.getProtocol()
+            .concat("://")
+            .concat(URLEncoder.encode(gitProperties.getUsername(), "UTF-8"))
+            .concat(":")
+            .concat(URLEncoder.encode(gitProperties.getPassword(), "UTF-8"))
+            .concat("@")
+            .concat(url.getAuthority()).concat(url.getPath());
+    }
+
+    private String getFolderRepositoryName(Etl etl) {
+        String folder = etl.getUriRepository().substring(etl.getUriRepository().lastIndexOf('/') + 1);
+        folder = folder.replace(".git", "");
+        return folder;
+    }
+
+    private void changeOwnerUnzippedFiles(OverthereConnection sudoConnection, String path, Etl etl) {
+        String chownParameter = platformProperties.determinePropertiesClass(etl).getHost().getOwnerUserResourcesPath().concat(":").concat(platformProperties.determinePropertiesClass(etl).getHost().getOwnerGroupResourcesPath());
+        executeCommand(sudoConnection, "chown", chownParameter, "-R", path);
+    }
+}

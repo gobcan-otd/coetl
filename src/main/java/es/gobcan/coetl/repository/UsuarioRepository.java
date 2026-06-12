@@ -30,6 +30,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Page<Usuario> findAll(DetachedCriteria criteria, Pageable pageable);
     
-    List<Usuario> findByIsAdminTrue();
+    List<Usuario> findByIsAdminTrueAndDeletionDateIsNull();
 
 }

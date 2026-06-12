@@ -16,6 +16,7 @@ import com.arte.libs.grammar.orm.jpa.criteria.converter.CriterionConverter;
 
 import es.gobcan.coetl.domain.Etl;
 import es.gobcan.coetl.domain.Etl.Type;
+import es.gobcan.coetl.domain.enumeration.TipoPlataformaEjecucion;
 import es.gobcan.coetl.errors.CustomParameterizedExceptionBuilder;
 import es.gobcan.coetl.errors.ErrorConstants;
 import es.gobcan.coetl.service.criteria.util.CriteriaUtil;
@@ -30,6 +31,7 @@ public class EtlCriteriaProcessor extends AbstractCriteriaProcessor {
     private static final String ENTITY_FIELD_TYPE = "type";
     private static final String ENTITY_FIELD_CREATED_DATE = "createdDate";
     private static final String ENTITY_FIELD_ORGANIZATION_IN_CHARGE = "organismo";
+    private static final String ENTITY_FIELD_EXECUTION_PLATFORM = "executionPlatform";
 
     public EtlCriteriaProcessor() {
         super(Etl.class);
@@ -37,7 +39,7 @@ public class EtlCriteriaProcessor extends AbstractCriteriaProcessor {
 
     public enum QueryProperty {
         CODE, NAME, TYPE, CREATED_DATE, ORGANISMO, IS_PLANNED, LAST_EXECUTION, NEXT_EXECUTION, ORGANIZATION_IN_CHARGE, LAST_EXECUTION_BY_RESULT,
-        LAST_EXECUTION_CUSTOM, VISIBILITY
+        LAST_EXECUTION_CUSTOM, VISIBILITY, ID_USUARIO_ETL, EXECUTION_PLATFORM
     }
 
     @Override
@@ -115,6 +117,15 @@ public class EtlCriteriaProcessor extends AbstractCriteriaProcessor {
                 RestrictionProcessorBuilder.restrictionProcessor()
                 .withQueryProperty(QueryProperty.VISIBILITY)
                 .withCriterionConverter(new IsVisibleCriterionBuilder())
+                .build());
+        registerProcessorsWithLogicalDeletionPolicy(
+                RestrictionProcessorBuilder.restrictionProcessor()
+                .withQueryProperty(QueryProperty.ID_USUARIO_ETL)
+                .withCriterionConverter(new EtlsUsuarioCriterionBuilder())
+                .build());
+        registerProcessorsWithLogicalDeletionPolicy(RestrictionProcessorBuilder.enumRestrictionProcessor(TipoPlataformaEjecucion.class)
+                .withQueryProperty(QueryProperty.EXECUTION_PLATFORM)
+                .withEntityProperty(ENTITY_FIELD_EXECUTION_PLATFORM)
                 .build());
         //@formatter:on
     }
@@ -291,6 +302,32 @@ public class EtlCriteriaProcessor extends AbstractCriteriaProcessor {
             return Restrictions.sqlRestriction(sql);
         }
 
+    }
+
+    private static class EtlsUsuarioCriterionBuilder implements CriterionConverter {
+
+        @Override
+        public Criterion convertToCriterion(QueryPropertyRestriction property, CriteriaProcessorContext context) {
+            if ("IN".equals(property.getOperationType().name())) {
+                return buildQueryByEtlUsuarioId(property.getRightValues());
+            }
+
+            throw new CustomParameterizedExceptionBuilder().message(String.format("Search Parameter not supported: '%s'", property))
+            .code(ErrorConstants.QUERY_NO_SOPORTADA, property.getLeftExpression(), property.getOperationType().name()).build();
+        }
+
+        private Criterion buildQueryByEtlUsuarioId(List<String> ids) {
+            StringBuilder query = new StringBuilder();
+            for (int i = 0; i < ids.size(); i++) {
+                if (i < ids.size() - 1) {
+                    query.append("'" + ids.get(i) + "',");
+                } else {
+                    query.append("'" + ids.get(i) + "'");
+                }
+            }
+            String sql = String.format(" {alias}.id IN (%s) ", query.toString());
+            return Restrictions.sqlRestriction(sql);
+        }
     }
 
 }

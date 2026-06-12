@@ -24,15 +24,15 @@ import org.hibernate.validator.constraints.NotBlank;
 @Table(name = "tb_parameters")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class Parameter extends AbstractVersionedEntity implements Serializable {
-
+	
     private static final long serialVersionUID = 812078062087474781L;
-
+    
     public enum Type {
         AUTO, MANUAL, GLOBAL
     }
 
     public enum Typology {
-        GENERIC, PASSWORD
+        GENERIC, PASSWORD, FILE
     }
 
     @Id
@@ -61,6 +61,9 @@ public class Parameter extends AbstractVersionedEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "etl_fk")
     private Etl etl;
+    
+    @Column(name = "file_fk")
+    private Long file;
 
     @Column(name = "description", length = 4000)
     private String description;
@@ -113,6 +116,14 @@ public class Parameter extends AbstractVersionedEntity implements Serializable {
     public void setEtl(Etl etl) {
         this.etl = etl;
     }
+    
+    public Long getFile() {
+        return file;
+    }
+
+    public void setFile(Long fileId) {
+    	this.file = fileId;
+    }
 
     public String getDescription() {
         return description;
@@ -120,6 +131,16 @@ public class Parameter extends AbstractVersionedEntity implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+    
+    @Override
+    public String toString() {
+        return "Parameter (id= " + id + 
+        		", etl= " + etl + 
+        		", value= " + value + 
+        		", file= " + file +
+        		", typology= " + typology +
+        		")";
     }
 
 }

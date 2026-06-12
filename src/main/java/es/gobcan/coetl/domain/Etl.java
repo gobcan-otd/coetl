@@ -2,6 +2,7 @@ package es.gobcan.coetl.domain;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.CascadeType;
@@ -9,10 +10,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
@@ -26,6 +29,9 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.validator.constraints.NotBlank;
 
+import es.gobcan.coetl.domain.enumeration.LogLevel;
+import es.gobcan.coetl.domain.enumeration.TipoPlataformaEjecucion;
+
 @Entity
 @Table(name = "tb_etls")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
@@ -34,7 +40,7 @@ public class Etl extends AbstractVersionedAndAuditingWithDeletionEntity implemen
     private static final long serialVersionUID = 1L;
 
     public enum Type {
-        TRANSFORMATION, JOB
+        TRANSFORMATION, JOB, WORKFLOW, PIPELINE
     }
 
     @Id
@@ -102,6 +108,19 @@ public class Etl extends AbstractVersionedAndAuditingWithDeletionEntity implemen
     @Column(name = "visibility", nullable = false)
     private Boolean visibility;
 
+    @ManyToMany(mappedBy = "etls", fetch = FetchType.LAZY)
+    private List<Usuario> usuarios;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "execution_platform", nullable = false, length = 255)
+    private TipoPlataformaEjecucion executionPlatform;
+    
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "log_level", nullable = false, length = 255)
+    private LogLevel logLevel = LogLevel.ERROR;
+
     @Override
     public Long getId() {
         return id;
@@ -168,11 +187,11 @@ public class Etl extends AbstractVersionedAndAuditingWithDeletionEntity implemen
     }
 
     public boolean isJob() {
-        return Type.JOB.equals(type);
+        return TipoPlataformaEjecucion.PENTAHO.equals(executionPlatform) && Type.JOB.equals(type);
     }
 
     public boolean isTransformation() {
-        return Type.TRANSFORMATION.equals(type);
+        return TipoPlataformaEjecucion.PENTAHO.equals(executionPlatform) && Type.TRANSFORMATION.equals(type);
     }
 
     public String getComments() {
@@ -233,6 +252,38 @@ public class Etl extends AbstractVersionedAndAuditingWithDeletionEntity implemen
 
     public void setVisibility(Boolean visibility) {
         this.visibility = visibility;
+    }
+
+    public List<Usuario> getUsuarios() {
+        return usuarios;
+    }
+
+    public void setUsuarios(List<Usuario> usuarios) {
+        this.usuarios = usuarios;
+    }
+
+    public boolean isWorkflow() {
+        return TipoPlataformaEjecucion.APACHE_HOP.equals(executionPlatform) && Type.WORKFLOW.equals(type);
+    }
+
+    public boolean isPipeline() {
+        return TipoPlataformaEjecucion.APACHE_HOP.equals(executionPlatform) && Type.PIPELINE.equals(type);
+    }
+
+    public TipoPlataformaEjecucion getExecutionPlatform() {
+        return executionPlatform;
+    }
+    
+    public void setExecutionPlatform(TipoPlataformaEjecucion executionPlatform) {
+        this.executionPlatform = executionPlatform;
+    }
+
+    public LogLevel getLogLevel() {
+        return logLevel;
+    }
+
+    public void setLogLevel(LogLevel logLevel) {
+        this.logLevel = logLevel;
     }
 
     @Override

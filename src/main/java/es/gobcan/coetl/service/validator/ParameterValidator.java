@@ -1,5 +1,7 @@
 package es.gobcan.coetl.service.validator;
 
+import java.io.File;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,8 @@ public class ParameterValidator extends AbstractValidator<Parameter> {
     private static final String FIELD_BLANK_ERROR_MESSAGE = "Field \"%s\" of Parameter (id=%s) can not be blank";
     private static final String FIELD_NULL_ERROR_MESSAGE = "Field \"%s\" of Parameter (id=%s) can not be null";
     private static final String FIELD_DUPLICATED_ERROR_MESSAGE = "Field \"%s\" of Parameter (id=%s) is duplicated";
+	private static final String FILE_ALREADY_EXISTS = "There is already a file with this name: %s";
+	private static final String ETL_RESOURCES = "ETL_RESOURCES";
 
     @Autowired
     private ParameterRepository parameterRepository;
@@ -112,4 +116,13 @@ public class ParameterValidator extends AbstractValidator<Parameter> {
             throw new CustomParameterizedExceptionBuilder().message(String.format(FIELD_NULL_ERROR_MESSAGE, "typology", entity.getId())).code(ErrorConstants.PARAMETER_EDIT).build();
         }
     }
+    
+    public void checkIfFileAlreadyExists(String filename, Long idEtl) {
+		Parameter etlResourcesParam = parameterRepository.findByKeyAndEtlId(ETL_RESOURCES, idEtl);
+    	File ficheroABuscar = new File(etlResourcesParam.getValue(), filename);
+		if(ficheroABuscar.exists()) {
+			throw new CustomParameterizedExceptionBuilder().message(String.format(FILE_ALREADY_EXISTS, filename)).code(ErrorConstants.PARAMETER_FILE_ALREADY_EXISTS).build();
+		}
+	}
+    
 }

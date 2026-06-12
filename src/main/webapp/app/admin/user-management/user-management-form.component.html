@@ -56,7 +56,7 @@
     <fieldset [disabled]="!isEditMode()" acAutofocus>
         <h3 jhiTranslate="userManagement.personalData"></h3>
         <div class="entity-fields">
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label class="form-control-label" jhiTranslate="userManagement.login"></label>
                 <input
                     type="text"
@@ -80,7 +80,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label class="form-control-label" jhiTranslate="userManagement.nombre"></label>
                 <input type="text" class="form-control" name="nombre" #nombreInput="ngModel" [(ngModel)]="user.nombre" maxlength="255" />
 
@@ -89,7 +89,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label jhiTranslate="userManagement.apellido1"></label>
                 <input type="text" class="form-control" name="apellido1" #apellido1Input="ngModel" [(ngModel)]="user.apellido1" maxlength="255" />
 
@@ -98,7 +98,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label jhiTranslate="userManagement.apellido2"></label>
                 <input type="text" class="form-control" name="apellido2" #apellido2Input="ngModel" [(ngModel)]="user.apellido2" maxlength="255" />
 
@@ -106,7 +106,7 @@
                     <small class="form-text text-danger" *ngIf="apellido2Input.errors.maxlength" jhiTranslate="entity.validation.maxlength" translateValues="{ max: 255 }"> </small>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label class="form-control-label" jhiTranslate="userManagement.email"></label>
                 <input type="email" class="form-control" name="email" #emailInput="ngModel" [(ngModel)]="user.email" minlength="3" required maxlength="255" email />
                 <div *ngIf="(emailInput.touched || emailInput.dirty) && emailInput.invalid" class="entity-field-error">
@@ -123,7 +123,7 @@
         </div>
         <h3 jhiTranslate="userManagement.userActive"></h3>
         <div class="entity-fields">
-            <div class="form-group full-width">
+            <div class="form-group mb-3 full-width">
                 <label jhiTranslate="userManagement.activado"></label>
                 <ac-tri-input-switch [disabled]="true" name="activado" [ngModel]="!user.deletionDate"></ac-tri-input-switch>
             </div>
@@ -132,48 +132,57 @@
         <h3 jhiTranslate="userManagement.permissions"></h3>
         &nbsp;
         <div class="entity-fields">
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <input type="text" class="form-control" readonly value="{{ roleEnum.ADMIN }}" name="field_rol_{{ roleEnum.ADMIN }}" />
             </div>
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <ac-tri-input-switch name="field_rol_{{ roleEnum.ADMIN }}" [(ngModel)]="user.isAdmin" class="form-control" [disabled]="isEditItSelf"></ac-tri-input-switch>
             </div>
         </div>
         <div class="entity-fields" *ngIf="!user.isAdmin">
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <input type="text" class="form-control" readonly value="{{ roleEnum.TECNICO }}" name="field_rol_{{ roleEnum.TECNICO }}" />
             </div>
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <ac-autocomplete
                     [disabled]="isEditItSelf"
                     [multiple]="true"
                     class="form-control"
                     name="organismos_{{ roleEnum.TECNICO }}"
-                    [(ngModel)]="organismosSelectedTECNICO"
+                    [(ngModel)]="organismosSelectedTecnico"
                     [suggestions]="allOrganismos"
                     [itemTemplate]="organismosItemTemplate"
                     [required]="false"
+                    (onSelect)="selectEtl()"
+                    (onUnselect)="unSelectEtl($event, roleEnum.TECNICO )"
                 >
                 </ac-autocomplete>
             </div>
         </div>
         <div class="entity-fields" *ngIf="!user.isAdmin">
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <input type="text" class="form-control" readonly value="{{ roleEnum.LECTOR }}" name="field_rol_{{ roleEnum.LECTOR }}" />
             </div>
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <ac-autocomplete
                     [disabled]="isEditItSelf"
                     [multiple]="true"
                     class="form-control"
                     name="organismos_{{ roleEnum.LECTOR }}"
-                    [(ngModel)]="organismosSelectedLECTOR"
+                    [(ngModel)]="organismosSelectedLector"
                     [suggestions]="allOrganismos"
                     [itemTemplate]="organismosItemTemplate"
                     [required]="false"
+                    (onSelect)="selectEtl()"
+                    (onUnselect)="unSelectEtl($event, roleEnum.LECTOR )"
                 >
                 </ac-autocomplete>
             </div>
+        </div>
+
+        <div *ngIf="!user.isAdmin">
+            <ac-user-management-list [(selectedEtls)]="selectedEtls" [isEdit]="isEditMode()" [(allEtlAccess)]="allEtlAccess" [(selectorList)]="selectorList">
+            </ac-user-management-list>
         </div>
     </fieldset>
     <ac-audit-info [entity]="user"></ac-audit-info>

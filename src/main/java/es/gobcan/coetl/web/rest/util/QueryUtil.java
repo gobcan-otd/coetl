@@ -45,7 +45,11 @@ public class QueryUtil {
     }
 
     public String queryIncludingIdOrganismo(String query, List<Long> ids) {
-        return new StringBuilder(query).append(" ").append(getQueryCodigos(ids)).toString();
+        return new StringBuilder(query).append(" ").append(getQueryCodigos(ids, "organization_in_charge")).toString();
+    }
+
+    public String queryIncludingIdEtl(String query, List<Long> ids) {
+        return new StringBuilder(query).append(" ").append(getQueryCodigos(ids, "id_usuario_etl")).toString();
     }
 
     public String pageableSortToQueryString(Pageable pageable) {
@@ -117,14 +121,15 @@ public class QueryUtil {
         return !matcher.matches();
     }
 
-    private String getQueryCodigos(List<Long> codigosOrganismo) {
+    private String getQueryCodigos(List<Long> ids, String queryPropertyName) {
         StringBuilder query = new StringBuilder();
-        query.append("organization_in_charge IN (");
-        for (int i = 0; i < codigosOrganismo.size(); i++) {
-            if (i < codigosOrganismo.size() - 1) {
-                query.append("'" + codigosOrganismo.get(i) + "',");
+        query.append(queryPropertyName);
+        query.append(" IN (");
+        for (int i = 0; i < ids.size(); i++) {
+            if (i < ids.size() - 1) {
+                query.append("'" + ids.get(i) + "',");
             } else {
-                query.append("'" + codigosOrganismo.get(i) + "'");
+                query.append("'" + ids.get(i) + "'");
             }
         }
         query.append(")");
@@ -143,6 +148,15 @@ public class QueryUtil {
             query.append(and).append(QueryProperty.LAST_EXECUTION).append(EQ).append(String.format("'%s'", lastExecutionStartDate)).toString();
         }
 
+        return query.toString();
+    }
+
+    public String getQueryByExecutionPlatform(String executionPlatform, StringBuilder queryBuilder) {
+        StringBuilder query = new StringBuilder();
+        String and = StringUtils.isNotBlank(queryBuilder) ? AND : "";
+        if (executionPlatform != null && !executionPlatform.isEmpty()) {
+            return query.append(and).append(QueryProperty.EXECUTION_PLATFORM).append(EQ).append("'").append(executionPlatform).append("'").toString();
+        }
         return query.toString();
     }
 

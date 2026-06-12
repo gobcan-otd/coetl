@@ -41,8 +41,8 @@ $stateFocusBgColor: null;
 $stateFocusTextColor: null;
 
 //Error State
-$stateErrorBorderColor: $btn-danger-bg;
-$stateErrorBgColor: $btn-danger-bg;
+$stateErrorBorderColor: $danger;
+$stateErrorBgColor: $danger;
 $stateErrorTextColor: $white;
 
 //Hover State
@@ -54,7 +54,7 @@ $stateHoverTextColor: $btn-primary-color;
 //Forms
 $inputBgColor: $white;
 $inputTextColor: $grey-darkest;
-$invalidInputBorderColor: $btn-danger-bg;
+$invalidInputBorderColor: $danger;
 $inputGroupTextColor: $white;
 
 @import '~primeng/resources/themes/theme';

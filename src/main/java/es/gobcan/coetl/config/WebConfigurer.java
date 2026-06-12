@@ -124,7 +124,6 @@ public class WebConfigurer implements ServletContextInitializer, EmbeddedServlet
         customStaticResourcesHttpHeadersFilter.addMappingForUrlPatterns(disps, true, "/app/*");
         customStaticResourcesHttpHeadersFilter.addMappingForUrlPatterns(disps, true, "/i18n/*");
         customStaticResourcesHttpHeadersFilter.addMappingForUrlPatterns(disps, true, "/templates/*");
-        customStaticResourcesHttpHeadersFilter.addMappingForUrlPatterns(disps, true, "/swagger-ui/index.html");
         customStaticResourcesHttpHeadersFilter.setAsyncSupported(true);
     }
 

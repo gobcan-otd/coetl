@@ -2,6 +2,7 @@
     "userManagement": {
         "personalData": "Datos personales",
         "permissions": "Permisos",
+        "user-etl": "ETL permitidas",
         "home": {
             "title": "Usuarios",
             "createLabel": "Crear un nuevo usuario",
@@ -51,6 +52,13 @@
                 "label": "Búsqueda por organismo",
                 "placeholder": "Seleccione un organismo"
             }
+        },
+        "userEtl": {
+            "list": {
+                "emptyListMessage": "No existen ETLs seleccionadas para este usuario"
+            },
+            "allowEtl": "¿Permitir acceso a todas las ETL?",
+            "etlEnableMessage": "ETL habilitadas al usuario"
         }
     }
 }

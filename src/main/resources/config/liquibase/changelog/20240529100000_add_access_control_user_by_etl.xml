@@ -1,0 +1,35 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+	<changeSet author="arte (generated)" id="20240529100000-0">
+		<addColumn tableName="usuario">
+			<column defaultValueBoolean="false" name="all_etl_access" type="boolean" remarks="Indica si un usuario Técnico o Lector podrá acceder o no, a todas las 
+			ETL que pertenezcan a los diferentes organismos para cuales se le haya dado acceso a dicho usuario">
+				<constraints nullable="false" />
+			</column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet author="arte" id="20240529100000-1">
+		<sqlFile dbms="postgresql" path="config/liquibase/postgresql/set_access_all_etls_current_users.sql" />
+	</changeSet>
+	
+	<changeSet author="arte" id="20240529100000-2">
+		<createTable tableName="tb_usuarios_etls">
+			<column name="id_usuario" type="bigint"
+				remarks="Clave foránea de la tabla usuarios">
+				<constraints nullable="false" foreignKeyName="fk_usuario_id_usuario"
+					references="usuario(id)" />
+			</column>
+			<column name="id_etl" type="bigint" remarks="Clave foránea de la tabla etls">
+				<constraints nullable="false" foreignKeyName="fk_usuario_etl_id"
+					references="tb_etls(id)" />
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet author="arte" id="20240529100000-3">
+		<addUniqueConstraint columnNames="id_usuario, id_etl"
+			constraintName="unique_user_etls" tableName="tb_usuarios_etls" />
+	</changeSet>
+
+</databaseChangeLog>

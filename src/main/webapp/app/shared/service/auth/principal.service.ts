@@ -32,7 +32,11 @@ export class Principal {
         if (rolesRuta.length === 0) {
             return true;
         }
-        if (!this.userIdentity || !this.userIdentity.usuarioRolOrganismo) {
+        if (
+            !this.userIdentity ||
+            !this.userIdentity.usuarioRolOrganismo ||
+            this.userIdentity.deletionDate
+        ) {
             return false;
         }
 
@@ -91,6 +95,7 @@ export class Principal {
     public correctlyLogged(): boolean {
         return Boolean(
             this.userIdentity &&
+                !this.userIdentity.deletionDate &&
                 (this.userIdentity.isAdmin || this.userIdentity.usuarioRolOrganismo.length > 0)
         );
     }

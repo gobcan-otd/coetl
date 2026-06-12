@@ -11,7 +11,7 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
 import es.gobcan.coetl.config.Constants;
-import es.gobcan.coetl.domain.UsuarioRolOrganismo;
+import es.gobcan.coetl.domain.Etl;
 
 public class UsuarioDTO extends AbstractVersionedAndAuditingWithDeletionDTO {
 
@@ -37,7 +37,11 @@ public class UsuarioDTO extends AbstractVersionedAndAuditingWithDeletionDTO {
     
     private Boolean isAdmin;
 
-    private List<UsuarioRolOrganismo> usuarioRolOrganismo;
+    private List<UsuarioRolOrganismoDTO> usuarioRolOrganismo;
+
+    private List<Etl> etls;
+
+    private Boolean allEtlAccess;
 
     public UsuarioDTO() {
         // Empty constructor needed for Jackson.
@@ -59,6 +63,8 @@ public class UsuarioDTO extends AbstractVersionedAndAuditingWithDeletionDTO {
         this.setDeletedBy(source.getDeletedBy());
         this.setDeletionDate(source.getDeletionDate());
         this.setOptLock(source.getOptLock());
+        this.etls = new ArrayList<>(source.getEtls());
+        this.allEtlAccess = source.getAllEtlAccess();
     }
 
     public static Builder builder() {
@@ -105,16 +111,36 @@ public class UsuarioDTO extends AbstractVersionedAndAuditingWithDeletionDTO {
 		this.isAdmin = isAdmin;
 	}
 
-	public List<UsuarioRolOrganismo> getUsuarioRolOrganismo() {
+	public List<UsuarioRolOrganismoDTO> getUsuarioRolOrganismo() {
         return usuarioRolOrganismo;
     }
 
-    public void setUsuarioRolOrganismo(List<UsuarioRolOrganismo> usuarioRolOrganismo) {
+    public void setUsuarioRolOrganismo(List<UsuarioRolOrganismoDTO> usuarioRolOrganismo) {
         if (usuarioRolOrganismo == null) {
             this.usuarioRolOrganismo = new ArrayList<>();
         } else {
             this.usuarioRolOrganismo = new ArrayList<>(usuarioRolOrganismo);
         }
+    }
+
+    public List<Etl> getEtls() {
+        return etls;
+    }
+
+    public void setEtls(List<Etl> etls) {
+        if (etls == null) {
+            this.etls = new ArrayList<>();
+        } else {
+            this.etls = etls;
+        }
+    }
+
+    public Boolean getAllEtlAccess() {
+        return allEtlAccess;
+    }
+
+    public void setAllEtlAccess(Boolean allEtlAccess) {
+        this.allEtlAccess = allEtlAccess;
     }
 
     public void setEmail(String email) {
@@ -153,8 +179,10 @@ public class UsuarioDTO extends AbstractVersionedAndAuditingWithDeletionDTO {
         private Instant lastModifiedDate;
         private String deletedBy;
         private Instant deletionDate;
-        private List<UsuarioRolOrganismo> authorities;
+        private List<UsuarioRolOrganismoDTO> authorities;
         private Long optLock;
+        private List<Etl> userEtls;
+        private Boolean allEtlAccess;
 
         public UsuarioDTO build() {
             UsuarioDTO userDTO = new UsuarioDTO();
@@ -173,6 +201,8 @@ public class UsuarioDTO extends AbstractVersionedAndAuditingWithDeletionDTO {
             userDTO.setDeletedBy(this.deletedBy);
             userDTO.setDeletionDate(this.deletionDate);
             userDTO.setUsuarioRolOrganismo(this.authorities);
+            userDTO.setEtls(this.userEtls);
+            userDTO.setAllEtlAccess(this.allEtlAccess);
             return userDTO;
         }
 
@@ -246,8 +276,18 @@ public class UsuarioDTO extends AbstractVersionedAndAuditingWithDeletionDTO {
             return this;
         }
 
-        public Builder setAuthorities(List<UsuarioRolOrganismo> authorities) {
+        public Builder setAuthorities(List<UsuarioRolOrganismoDTO> authorities) {
             this.authorities = authorities;
+            return this;
+        }
+
+        public Builder setUserEtls(List<Etl> userEtl) {
+            this.userEtls = userEtl;
+            return this;
+        }
+
+        public Builder setAllEtlAccess(Boolean allEtlAccess) {
+            this.allEtlAccess = allEtlAccess;
             return this;
         }
 

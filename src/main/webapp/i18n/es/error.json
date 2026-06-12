@@ -28,7 +28,8 @@
         "url.not.found": "No encontrado",
         "NotNull": "¡El campo {{0}} no puede estar vacío!",
         "Size": "¡El campo {{0}} no cumple con los requisitos de tamaño mínimo/máximo!",
-        "usuario-existe": "El nombre de usuario o correo electrónico introducido ya está siendo usado",
+        "emailUserExists": "El correo electrónico introducido ya está siendo usado",
+        "userExists": "El nombre de usuario introducido ya está siendo usado",
         "id-existe": "Un nuevo {{0}} no puede tener previamente un ID",
         "entidad-no-encontrada": "Resultado de {{0}} no encontrado",
         "entity": {
@@ -47,7 +48,9 @@
             "codeExists": "Ya existe otra ETL con el mismo código",
             "cloneRepository": "Ha ocurrido un error clonando el repositorio",
             "replacingRepository": "Ha ocurrido un error reemplazando el repositorio",
-            "accessDenied": "Lo sentimos, no tiene permisos suficientes para realizar la operación"
+            "accessDenied": "Lo sentimos, no tiene permisos suficientes para realizar la operación",
+            "typeNotSupported": "Tipo no soportado para la plataforma de ejecución",
+            "executingError": "Ha ocurrido un error durante la ejecución programada de la ETL."
         },
         "health": {
             "serviceName": {
@@ -71,6 +74,12 @@
                 "key": {
                     "isDuplicated": "Ya existe un parámetro en una con la misma clave en la ETL: <strong> {{0}} </strong> "
                 }
+            },
+            "file":{
+                "wrongFormat": "El formato del fichero no es válido",
+                "sizeExceeded": "El tamaño del fichero no puede ser superior a 50Mb",
+                "alreadyExists": "Ya existe un fichero con el mismo nombre",
+                "unknown": "Se ha producido un error desconocido al mover el fichero"
             }
         },
         "organism": {
@@ -89,8 +98,12 @@
         "quartz": {
             "jobExecutionError": "Ha ocurrido un error en la ejecución planificada de la ETL con código {{0}}"
         },
+        "userAdminRolOrganismoNotEmpty": "Un usuario administrador no se asocia a ningún organismo",
         "userRolOrganismoNotEmpty": "Un usuario debe tener al menos configurado un organismo, para al menos un rol",
         "userRolOrganismoJustOnce": "Un usuario no puede tener configurado un mismo organismo en más de un rol",
+        "user": {
+            "userRestrictedAccessEtlNoEtlSelected": "El usuario no tiene permisos para acceder a todas las ETL, debe seleccionar al menos una ETL a la que puede acceder"
+        },
         "execution": {
             "credentials": "Se produjo un error con las credenciales del repositorio git",
             "uri": "Ha ocurrido un error con la URI del repositorio indicado en la etl {{0}}",

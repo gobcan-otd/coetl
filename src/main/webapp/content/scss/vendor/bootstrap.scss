@@ -5,6 +5,9 @@
 .form-control {
     font-weight: $font-weight-normal;
 }
+.form-control:read-only {
+    background-color: white;
+}
 // Overriding _normalize.scss
 button,
 input,

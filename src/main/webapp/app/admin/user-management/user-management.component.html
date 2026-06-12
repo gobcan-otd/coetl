@@ -53,14 +53,18 @@
                                         <td>{{ user.apellido1 }}</td>
                                         <td>{{ user.apellido2 }}</td>
                                         <td>{{ user.email }}</td>
-                                        <td><span class="badge badge-info">ADMIN</span></td>
+                                        <td><span class="badge bg-info">ADMIN</span></td>
                                         <td></td>
                                     </tr>
                                 </ng-container>
                                 <ng-container *ngIf="!user.isAdmin">
                                     <ng-container *ngFor="let role of getRolesInGroupedMap(getUserOrganismGroupByRole(user.usuarioRolOrganismo)); let i_role = index">
                                         <ng-container *ngFor="let organism of getUserOrganismGroupByRole(user.usuarioRolOrganismo).get(role); let i = index">
-                                            <tr [ngClass]="{'fix_spanning_row': i_role > 0 || i > 0}" [routerLink]="['../user-management', user.login]">
+                                            <tr
+                                                [ngClass]="{'fix_spanning_row': i_role > 0 || i > 0,
+                                                'entity-deleted': !!user.deletionDate}"
+                                                [routerLink]="['../user-management', user.login]"
+                                            >
                                                 <ng-container *ngIf="i_role === 0 && i === 0">
                                                     <td [attr.rowspan]="user.usuarioRolOrganismo.length">{{ user.login }}</td>
                                                     <td [attr.rowspan]="user.usuarioRolOrganismo.length">{{ user.nombre }}</td>
@@ -70,7 +74,7 @@
                                                 </ng-container>
                                                 <ng-container *ngIf="i === 0">
                                                     <td [attr.rowspan]="getUserOrganismGroupByRole(user.usuarioRolOrganismo).get(role).length">
-                                                        <span class="badge badge-info">{{ role }}</span>
+                                                        <span class="badge bg-info">{{ role }}</span>
                                                     </td>
                                                     <td>{{ organism }}</td>
                                                 </ng-container>

@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Response } from '@angular/http';
+import { TranslateService } from '@ngx-translate/core';
 import { JhiEventManager } from 'ng-jhipster';
 import {
     User,
@@ -10,19 +11,22 @@ import {
     Principal,
     PermissionService
 } from '../../shared';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { UsuarioRolOrganismo } from '../../shared/service/user-rol-organismos/user-rol-organismos.model';
-import { UsuarioRolOrganismoService } from '../../shared/service/user-rol-organismos';
 import { Roles } from '../../shared/service/roles/roles.model';
 import { Organism, OrganismService } from '../organism';
 import { RolesService } from '../../shared/service/roles';
 import { AcAlertService } from '../../shared/component/alert/alert.service';
+import { Etl, EtlBase } from '../../entities/etl/etl.model';
+import { EtlService } from '../../entities/etl/etl.service';
+import { EtlListItem } from './etl-list-item.model';
 
 @Component({
     selector: 'jhi-user-mgmt-form',
     templateUrl: './user-management-form.component.html'
 })
 export class UserMgmtFormComponent implements OnInit, OnDestroy {
+    public static EVENT_NAME = 'cserMgmtFormComponent';
     user: User;
     isSaving: Boolean;
     roleEnum = Rol;
@@ -37,32 +41,40 @@ export class UserMgmtFormComponent implements OnInit, OnDestroy {
     public allRoles: Roles[];
     public allOrganismos: Organism[];
 
-    public organismosSelectedADMIN: Organism[];
-    public organismosSelectedTECNICO: Organism[];
-    public organismosSelectedLECTOR: Organism[];
+    public organismosSelectedTecnico: Organism[];
+    public organismosSelectedLector: Organism[];
 
     public isEditItSelf: boolean;
     alerts: any[];
 
+    public selectedEtls: EtlListItem[];
+    public etlList: Etl[];
+    public allEtlAccess: boolean;
+    public selectorList: EtlListItem[];
+
     constructor(
         private userService: UserService,
+        private etlService: EtlService,
         public permissionService: PermissionService,
         private eventManager: JhiEventManager,
         private route: ActivatedRoute,
         private router: Router,
         private organismService: OrganismService,
         private rolesService: RolesService,
-        private usuarioRolOrganismoService: UsuarioRolOrganismoService,
         private principal: Principal,
-        public acAlertService: AcAlertService
+        public acAlertService: AcAlertService,
+        private translateService: TranslateService
     ) {}
 
     ngOnInit() {
         this.isSaving = false;
         this.isEditItSelf = false;
-        this.organismosSelectedADMIN = [];
-        this.organismosSelectedTECNICO = [];
-        this.organismosSelectedLECTOR = [];
+        this.organismosSelectedTecnico = [];
+        this.organismosSelectedLector = [];
+
+        this.selectedEtls = [];
+        this.etlList = [];
+        this.selectorList = [];
 
         this.subscription = this.route.params.subscribe((params) => {
             this.paramLogin = params['login'];
@@ -80,18 +92,72 @@ export class UserMgmtFormComponent implements OnInit, OnDestroy {
         return lastPath === 'edit' || lastPath === 'user-management-new';
     }
 
+    private initSelectedEtls() {
+        this.selectedEtls = [];
+        this.user.etls.forEach((element, index) => {
+            this.selectedEtls.push(this.selectorList.find((etl) => etl.id === element.id));
+        });
+    }
+
     load(login) {
-        this.getAllRoles();
-        this.getAllOrganismos();
         if (login) {
             this.userService.find(login).subscribe((user) => {
+                this.getAllRoles();
                 this.user = user;
-                this.loadDataSelect();
                 this.isEditItSelf = this.principal.getUserId() === this.user.id;
             });
         } else {
             this.user = new User();
+            this.allEtlAccess = false;
+            this.getAllRoles();
+            this.getAllOrganismosByIdListOrganismNotIn();
         }
+    }
+
+    private loadAll() {
+        this.etlService
+            .findAllByOrganism(this.getOrganismos())
+            .subscribe((res: ResponseWrapper) => this.onListSuccess(res.json));
+    }
+
+    private onListSuccess(data: EtlBase[]) {
+        this.etlList = data;
+        let tmp = [];
+        data.forEach((etl: EtlBase) => {
+            tmp.push({ id: etl.id, name: etl.name + ' - ' + etl.organizationInCharge.name });
+        });
+        this.selectorList = tmp;
+        this.initSelectedEtls();
+    }
+
+    public getOrganismos(): number[] {
+        const organismos: number[] = [];
+        this.organismosSelectedTecnico.map((o) => {
+            organismos.push(o.id);
+        });
+        this.organismosSelectedLector.map((o) => {
+            organismos.push(o.id);
+        });
+        return organismos;
+    }
+
+    public selectEtl() {
+        this.loadAll();
+        this.getAllOrganismosByIdListOrganismNotIn();
+    }
+
+    public unSelectEtl(event: Organism, rol: any) {
+        if (rol === Rol.TECNICO) {
+            this.organismosSelectedTecnico = this.organismosSelectedTecnico.filter(
+                (org) => org.id !== event.id
+            );
+        } else if (rol === Rol.LECTOR) {
+            this.organismosSelectedLector = this.organismosSelectedLector.filter(
+                (org) => org.id !== event.id
+            );
+        }
+        this.loadAll();
+        this.getAllOrganismosByIdListOrganismNotIn();
     }
 
     private loadDataSelect() {
@@ -121,9 +187,10 @@ export class UserMgmtFormComponent implements OnInit, OnDestroy {
             .subscribe((response: ResponseWrapper) => this.onSuccess(response.json));
     }
 
-    private getAllOrganismos() {
+    private getAllOrganismosByIdListOrganismNotIn() {
+        const requestOption = { exclusions: this.getOrganismos() };
         this.organismService
-            .findAllOrganism()
+            .findAllOrganism(requestOption)
             .subscribe((response: ResponseWrapper) =>
                 this.convertResponseToRolesReponseWrapper(response.json)
             );
@@ -131,6 +198,12 @@ export class UserMgmtFormComponent implements OnInit, OnDestroy {
 
     private onSuccess(data: Roles[]) {
         this.allRoles = data;
+        if (this.user.id) {
+            this.loadDataSelect();
+            this.loadAll();
+            this.allEtlAccess = this.user.allEtlAccess;
+            this.getAllOrganismosByIdListOrganismNotIn();
+        }
     }
 
     public setCurrentPermissionUserValues() {
@@ -139,19 +212,19 @@ export class UserMgmtFormComponent implements OnInit, OnDestroy {
                 if (this.allRoles.find((r) => r.id === key && r.name === Rol.TECNICO)) {
                     if (Array.isArray(value)) {
                         value.forEach((organismo: Organism) =>
-                            this.organismosSelectedTECNICO.push(organismo)
+                            this.organismosSelectedTecnico.push(organismo)
                         );
                     } else {
-                        this.organismosSelectedTECNICO.push(value['aux']);
+                        this.organismosSelectedTecnico.push(value['aux']);
                     }
                 }
                 if (this.allRoles.find((r) => r.id === key && r.name === Rol.LECTOR)) {
                     if (Array.isArray(value)) {
                         value.forEach((organismo: Organism) =>
-                            this.organismosSelectedLECTOR.push(organismo)
+                            this.organismosSelectedLector.push(organismo)
                         );
                     } else {
-                        this.organismosSelectedLECTOR.push(value['aux']);
+                        this.organismosSelectedLector.push(value['aux']);
                     }
                 }
             });
@@ -175,25 +248,51 @@ export class UserMgmtFormComponent implements OnInit, OnDestroy {
         this.router.navigate(returnPath);
     }
 
+    private setUsuarioRolOrganismo(
+        organismoSeleted: Organism,
+        currentOrganism: UsuarioRolOrganismo,
+        rol: Rol
+    ) {
+        if (currentOrganism && currentOrganism.id !== null) {
+            return currentOrganism;
+        }
+
+        const tmpThread: UsuarioRolOrganismo = new UsuarioRolOrganismo();
+        tmpThread.organismo = organismoSeleted;
+        tmpThread.rol = this.allRoles.find((r) => r.name === rol);
+        return tmpThread;
+    }
+
     private updateUsuarioRolOrganismoUser() {
-        this.user.usuarioRolOrganismo = [];
-        let o: UsuarioRolOrganismo = new UsuarioRolOrganismo();
-
+        const tmpUsrRolOrganism = [];
         if (!this.user.isAdmin && this.allOrganismos.length !== 0) {
-            this.organismosSelectedTECNICO.forEach((value: Organism) => {
-                o = new UsuarioRolOrganismo();
-                o.organismo = value;
-                o.rol = this.getRolByName(Rol.TECNICO);
-                this.user.usuarioRolOrganismo.push(o);
+            this.organismosSelectedTecnico.forEach((value: Organism) => {
+                tmpUsrRolOrganism.push(
+                    this.setUsuarioRolOrganismo(
+                        value,
+                        this.user.usuarioRolOrganismo.find(
+                            (current) =>
+                                current.organismo.id == value.id && current.rol.name === Rol.TECNICO
+                        ),
+                        Rol.TECNICO
+                    )
+                );
             });
-
-            this.organismosSelectedLECTOR.forEach((value: Organism) => {
-                o = new UsuarioRolOrganismo();
-                o.organismo = value;
-                o.rol = this.getRolByName(Rol.LECTOR);
-                this.user.usuarioRolOrganismo.push(o);
+            this.organismosSelectedLector.forEach((value: Organism) => {
+                tmpUsrRolOrganism.push(
+                    this.setUsuarioRolOrganismo(
+                        value,
+                        this.user.usuarioRolOrganismo.find(
+                            (current) =>
+                                current.organismo.id == value.id && current.rol.name === Rol.LECTOR
+                        ),
+                        Rol.LECTOR
+                    )
+                );
             });
         }
+        this.user.usuarioRolOrganismo = [];
+        this.user.usuarioRolOrganismo = tmpUsrRolOrganism;
     }
 
     private getRolByName(name: string): Roles {
@@ -208,26 +307,87 @@ export class UserMgmtFormComponent implements OnInit, OnDestroy {
         );
     }
 
+    private check(etl: EtlListItem) {
+        const etltmp = this.etlList.filter((val) => etl && etl.id === val.id);
+        return etltmp.length > 0;
+    }
+
+    private getTranslationName(jsonToTranslate: string): string {
+        return this.translateService.instant(jsonToTranslate);
+    }
+
+    private checkEtlSelected() {
+        this.user.allEtlAccess = this.user.isAdmin ? true : this.allEtlAccess;
+        if (!this.user.isAdmin && !this.allEtlAccess && this.selectedEtls.length === 0) {
+            this.acAlertService.error(
+                this.getTranslationName(`error.user.userRestrictedAccessEtlNoEtlSelected`)
+            );
+            return false;
+        }
+        return true;
+    }
+
+    private checkUserHasRolOrganism() {
+        if (!this.user.isAdmin && this.user.usuarioRolOrganismo.length === 0) {
+            this.acAlertService.error(this.getTranslationName(`error.userRolOrganismoNotEmpty`));
+            return false;
+        }
+        return true;
+    }
+
+    private setEtl(data: EtlBase) {
+        const etl: Etl = new Etl();
+        etl.id = data.id;
+        etl.code = data.code;
+        etl.name = data.name;
+        etl.organizationInCharge = data.organizationInCharge;
+        etl.type = data.type;
+        etl.executionPlanning = data.executionPlanning;
+        etl.nextExecution = data.nextExecution;
+        etl.lastExecution = data.lastExecution;
+        return etl;
+    }
+
+    private setDataUserEtl(selectedEtl: Etl, currentUserEtl: Etl) {
+        if (!currentUserEtl) {
+            let tmpUserEtl: Etl = new Etl();
+            tmpUserEtl = this.setEtl(selectedEtl);
+            return tmpUserEtl;
+        }
+        return currentUserEtl;
+    }
+
+    private setUserEtls() {
+        const tmpUserEtls = [];
+        if (!this.user.allEtlAccess) {
+            this.selectedEtls.forEach((selectedEtl, index) => {
+                tmpUserEtls.push(
+                    this.setDataUserEtl(
+                        this.etlList.find((etl) => etl.id == selectedEtl.id),
+                        this.user.etls.find((etlThread) => etlThread.id == selectedEtl.id)
+                    )
+                );
+            });
+        }
+        this.user.etls = [];
+        this.user.etls = tmpUserEtls;
+    }
+
     save() {
+        this.selectedEtls = this.selectedEtls.filter((etl) => this.check(etl) == true);
         this.isSaving = true;
         this.updateUsuarioRolOrganismoUser();
-        if (!this.user.isAdmin && this.user.usuarioRolOrganismo.length === 0) {
-            this.acAlertService.error(
-                'Un usuario debe de tener al menos configurado un organismo para un rol'
-            );
+        if (!this.checkUserHasRolOrganism() || !this.checkEtlSelected()) {
             this.isSaving = false;
         } else {
+            this.setUserEtls();
             if (this.user.id !== null) {
-                this.usuarioRolOrganismoService
-                    .delete({ idUsuario: this.user.id })
-                    .subscribe((soloLector) => {
-                        this.userService
-                            .update(this.user)
-                            .subscribe(
-                                (response) => this.onSaveSuccess(response),
-                                () => this.onSaveError()
-                            );
-                    });
+                this.userService
+                    .update(this.user)
+                    .subscribe(
+                        (response) => this.onSaveSuccess(response),
+                        () => this.onSaveError()
+                    );
             } else {
                 this.userService
                     .create(this.user)
@@ -260,6 +420,7 @@ export class UserMgmtFormComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.subscription.unsubscribe();
+        this.eventManager.destroy(this.eventSubscriber);
     }
 
     public toLowerCase() {

@@ -2,6 +2,7 @@ package es.gobcan.coetl.web.rest.dto;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.sql.Timestamp;
 
 public class FileDTO implements Serializable {
 
@@ -9,11 +10,11 @@ public class FileDTO implements Serializable {
 
     private Long id;
 
-    private String dataContentType;
+    private String format;
 
     private String name;
 
-    private Long length;
+    private Timestamp creationDate;
 
     public Long getId() {
         return id;
@@ -23,12 +24,12 @@ public class FileDTO implements Serializable {
         this.id = id;
     }
 
-    public String getDataContentType() {
-        return dataContentType;
+    public String getFormat() {
+        return format;
     }
 
-    public void setDataContentType(String dataContentType) {
-        this.dataContentType = dataContentType;
+    public void setFormat(String formato) {
+        this.format = formato;
     }
 
     public String getName() {
@@ -39,12 +40,12 @@ public class FileDTO implements Serializable {
         this.name = name;
     }
 
-    public Long getLength() {
-        return length;
+    public Timestamp getCreationDate() {
+        return creationDate;
     }
 
-    public void setLength(Long length) {
-        this.length = length;
+    public void setCreationDate(Timestamp creationDate) {
+        this.creationDate = creationDate;
     }
 
     @Override

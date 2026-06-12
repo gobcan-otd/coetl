@@ -7,6 +7,8 @@ import static org.quartz.TriggerBuilder.newTrigger;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -31,12 +33,16 @@ import es.gobcan.coetl.config.QuartzConstants;
 import es.gobcan.coetl.domain.Etl;
 import es.gobcan.coetl.domain.Execution;
 import es.gobcan.coetl.domain.Execution.Type;
+import es.gobcan.coetl.domain.Usuario;
+import es.gobcan.coetl.domain.enumeration.TipoPlataformaEjecucion;
 import es.gobcan.coetl.errors.CustomParameterizedExceptionBuilder;
 import es.gobcan.coetl.errors.ErrorConstants;
 import es.gobcan.coetl.errors.util.CustomExceptionUtil;
-import es.gobcan.coetl.job.PentahoExecutionJob;
-import es.gobcan.coetl.pentaho.service.PentahoExecutionService;
+import es.gobcan.coetl.job.PlatformExecutionJob;
+import es.gobcan.coetl.platform.hop.service.impl.HopExecutionServiceImpl;
+import es.gobcan.coetl.platform.pentaho.service.impl.PentahoExecutionServiceImpl;
 import es.gobcan.coetl.repository.EtlRepository;
+import es.gobcan.coetl.repository.UsuarioRepository;
 import es.gobcan.coetl.security.SecurityChecker;
 import es.gobcan.coetl.security.SecurityUtils;
 import es.gobcan.coetl.service.EtlService;
@@ -50,8 +56,10 @@ import es.gobcan.coetl.web.rest.util.QueryUtil;
 public class EtlServiceImpl implements EtlService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EtlService.class);
-    private static final String IDENTITY_JOB_PREFIX = "pentahoExecutionJob_";
-    private static final String IDENTITY_TRIGGER_PREFIX = "pentahoExectionTrigger_";
+    private static final String IDENTITY_JOB_PENTAHO_PREFIX = "pentahoExecutionJob_";
+    private static final String IDENTITY_TRIGGER_PENTAHO_PREFIX = "pentahoExectionTrigger_";
+    private static final String IDENTITY_JOB_HOP_PREFIX = "hopExecutionJob_";
+    private static final String IDENTITY_TRIGGER_HOP_PREFIX = "hopExecutionTrigger_";
     private static final String AND = " AND ";
 
     @Autowired
@@ -67,7 +75,7 @@ public class EtlServiceImpl implements EtlService {
     private ExecutionService executionService;
 
     @Autowired
-    private PentahoExecutionService pentahoExecutionService;
+    private PentahoExecutionServiceImpl pentahoExecutionService;
 
     @Autowired
     private SchedulerFactoryBean schedulerAccessorBean;
@@ -75,9 +83,16 @@ public class EtlServiceImpl implements EtlService {
     @Autowired
     private SecurityChecker secCheck;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private HopExecutionServiceImpl hopExecutionService;
+
     @Override
     public Etl create(Etl etl) {
         LOG.debug("Request to create an ETL : {}", etl);
+        this.trimCodeEtl(etl);
         etlValidator.validate(etl);
         return (etl.isPlanned()) ? planifyAndSave(etl) : save(etl);
     }
@@ -113,17 +128,37 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
-    public Page<Etl> findAll(String query, boolean includeDeleted, Pageable pageable, List<Long> organismosId, String lastExecutionStartDate, String lastExecutionResult) {
+    public Page<Etl> findAll(String query, boolean includeDeleted, Pageable pageable, List<Long> organismosId, String lastExecutionStartDate, String lastExecutionResult,
+            String executionPlatform) {
         LOG.debug("Request to find all ETLs by query : {}", query);
-        DetachedCriteria criteria = buildEtlCriteria(query, includeDeleted, pageable, organismosId, lastExecutionStartDate, lastExecutionResult);
+        DetachedCriteria criteria = buildEtlCriteria(query, includeDeleted, pageable, organismosId, lastExecutionStartDate, lastExecutionResult, executionPlatform);
         return etlRepository.findAll(criteria, pageable);
+    }
+
+    @Override
+    public List<Etl> findAllByOrganismIdIn(List<Long> organismosId) {
+        LOG.debug("Request to find all ETLs by organism list : {}", organismosId);
+        return etlRepository.findByOrganizationInChargeIdInAndDeletionDateIsNullAndVisibilityOrderByName(organismosId, false);
     }
 
     @Override
     public void execute(Etl etl) {
         LOG.debug("Request to execute ETL : {}", etl);
+        Execution resultExecution = null;
 
-        Execution resultExecution = pentahoExecutionService.execute(etl, Type.MANUAL, SecurityContextHolder.getContext().getAuthentication().getName());
+        switch (etl.getExecutionPlatform()) {
+            case PENTAHO: {
+                resultExecution = pentahoExecutionService.execute(etl, Type.MANUAL, SecurityContextHolder.getContext().getAuthentication().getName());
+                break;
+            }
+            case APACHE_HOP: {
+                resultExecution = hopExecutionService.execute(etl, Type.MANUAL, SecurityContextHolder.getContext().getAuthentication().getName());
+                break;
+            }
+            default: {
+                throw new RuntimeException("Execution platform not defined");
+            }
+        }
         executionService.create(resultExecution);
 
     }
@@ -140,16 +175,27 @@ public class EtlServiceImpl implements EtlService {
         }
         return true;
     }
-
+    
+    @Override
+    public boolean goingToChangePlatform(EtlDTO etlDto) {
+        LOG.debug("Request to check if its going to change platform from DTO: {}", etlDto);
+        if (etlDto.getId() == null) {
+        	return false;
+        }
+        Etl etl = etlRepository.findOne(etlDto.getId());
+        return !etl.getExecutionPlatform().equals(etlDto.getExecutionPlatform());
+    }
+    
     private Etl planifyAndSave(Etl etl) {
         LOG.debug("Request to planify and save an ETL : {}", etl);
-        JobKey jobKey = new JobKey(IDENTITY_JOB_PREFIX + etl.getCode());
+        JobKey jobKey = etl.getExecutionPlatform() == TipoPlataformaEjecucion.PENTAHO ? new JobKey(IDENTITY_JOB_PENTAHO_PREFIX + etl.getCode()) : 
+            new JobKey(IDENTITY_JOB_HOP_PREFIX + etl.getCode());
         final String executionPlanning = etl.getExecutionPlanning();
 
         CronExpression cronExpression = buildCronExpression(executionPlanning);
         Instant nextExecution = CronUtils.getNextExecutionFromCronExpression(cronExpression);
         etl.setNextExecution(nextExecution);
-        schedulePentahoExecutionJob(jobKey, cronExpression, etl);
+        schedulePlatformExecutionJob(jobKey, cronExpression, etl);
 
         return save(etl);
     }
@@ -166,7 +212,8 @@ public class EtlServiceImpl implements EtlService {
 
     private Etl unplanifyAndSave(Etl etl) {
         LOG.debug("Request to unplanify and save an ETL : {}", etl);
-        JobKey jobKey = new JobKey(IDENTITY_JOB_PREFIX + etl.getCode());
+        JobKey jobKey = etl.getExecutionPlatform() == TipoPlataformaEjecucion.PENTAHO ? new JobKey(IDENTITY_JOB_PENTAHO_PREFIX + etl.getCode()) : 
+            new JobKey(IDENTITY_JOB_HOP_PREFIX + etl.getCode());
         unschedulePentahoExecutionJob(jobKey);
         etl.setNextExecution(null);
         return save(etl);
@@ -177,17 +224,23 @@ public class EtlServiceImpl implements EtlService {
         LOG.debug("Request to save an ETL : {}", etl);
         return etlRepository.saveAndFlush(etl);
     }
+    
+    private Etl trimCodeEtl(Etl etl) {
+    	etl.setCode(etl.getCode().trim());
+        return etl;
+    }
 
-    private void schedulePentahoExecutionJob(JobKey jobKey, CronExpression cronExpression, Etl etl) {
+    private void schedulePlatformExecutionJob(JobKey jobKey, CronExpression cronExpression, Etl etl) {
         LOG.debug("Request to scheduled a new Quartz job : {}", jobKey.getName());
         //@formatter:off
-        JobDetail job = newJob(PentahoExecutionJob.class)
+        JobDetail job = newJob(PlatformExecutionJob.class)
                 .withIdentity(jobKey)
                 .usingJobData(QuartzConstants.ETL_CODE_JOB_DATA, etl.getCode())
                 .build();
 
         CronTrigger trigger = newTrigger()
-                .withIdentity(IDENTITY_TRIGGER_PREFIX + etl.getCode())
+                .withIdentity(etl.getExecutionPlatform() == TipoPlataformaEjecucion.PENTAHO ? IDENTITY_TRIGGER_PENTAHO_PREFIX + etl.getCode() : 
+                    IDENTITY_TRIGGER_HOP_PREFIX + etl.getCode())
                 .withSchedule(cronSchedule(cronExpression))
                 .build();
         //@formatter:on
@@ -221,15 +274,23 @@ public class EtlServiceImpl implements EtlService {
     }
 
     private DetachedCriteria buildEtlCriteria(String query, boolean includeDeleted, Pageable pageable, List<Long> organismosId, String lastExecutionStartDate,
-            String lastExecutionResult) {
+            String lastExecutionResult, String executionPlatform) {
         StringBuilder queryBuilder = new StringBuilder();
         if (StringUtils.isNotBlank(query)) {
             queryBuilder.append(query);
         }
         if (organismosId != null && !organismosId.isEmpty()) {
-            queryBuilder.append(getQueryByOrganismos(organismosId, queryBuilder));
+            queryBuilder = getQueryByOrganismos(organismosId, queryBuilder);
         }
+
+        String login = SecurityUtils.getCurrentUserLogin();
+        Optional<Usuario> user = usuarioRepository.findOneByLogin(login);
+        if (user.isPresent() && !user.get().getIsAdmin() && !user.get().getAllEtlAccess()) {
+            queryBuilder = getQueryByEtlsUsuario(user.get().getEtls(), queryBuilder);
+        }
+
         queryBuilder.append(queryUtil.getQueryByLastExecution(lastExecutionStartDate, lastExecutionResult, queryBuilder));
+        queryBuilder.append(queryUtil.getQueryByExecutionPlatform(executionPlatform, queryBuilder));
         String finalQuery = getFinalQuery(includeDeleted, queryBuilder);
         return queryUtil.queryToEtlCriteria(pageable, finalQuery);
     }
@@ -242,7 +303,7 @@ public class EtlServiceImpl implements EtlService {
         return finalQuery;
     }
 
-    private String getQueryByOrganismos(List<Long> organismosId, StringBuilder queryBuilder) {
+    private StringBuilder getQueryByOrganismos(List<Long> organismosId, StringBuilder queryBuilder) {
         StringBuilder query = new StringBuilder();
         if (!secCheck.canSeeAllEtls(SecurityContextHolder.getContext().getAuthentication())) {
             if (StringUtils.isNotBlank(queryBuilder)) {
@@ -250,6 +311,17 @@ public class EtlServiceImpl implements EtlService {
             }
             query.append(queryUtil.queryIncludingIdOrganismo(queryBuilder.toString(), organismosId));
         }
-        return query.toString();
+        return query;
     }
+
+    private StringBuilder getQueryByEtlsUsuario(List<Etl> etls, StringBuilder queryBuilder) {
+        StringBuilder query = new StringBuilder();
+        List<Long> etlsId = etls.stream().map(etl -> etl.getId()).collect(Collectors.toList());
+        if (StringUtils.isNotBlank(queryBuilder)) {
+            queryBuilder.append(AND);
+        }
+        query.append(queryUtil.queryIncludingIdEtl(queryBuilder.toString(), etlsId));
+        return query;
+    }
+
 }

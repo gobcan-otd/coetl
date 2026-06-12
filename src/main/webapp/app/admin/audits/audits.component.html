@@ -26,7 +26,7 @@
             </thead>
             <tr *ngFor="let audit of audits">
                 <td>
-                    <span>{{ audit.timestamp | acDate: 'datetime' }}</span>
+                    <span>{{ audit.timestamp | date: 'dd/MM/yyyy HH:mm' }}</span>
                 </td>
                 <td>
                     <small>{{ audit.principal }}</small>

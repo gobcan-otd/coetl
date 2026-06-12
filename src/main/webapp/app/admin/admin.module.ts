@@ -19,7 +19,6 @@ import {
     HealthDeleteDialogComponent,
     HealthComponent,
     JhiConfigurationComponent,
-    JhiDocsComponent,
     AuditsService,
     JhiConfigurationService,
     HealthService,
@@ -29,7 +28,8 @@ import {
     UserModalService,
     AuditsResolvePagingParams,
     GlobalParameterComponent,
-    OrganismComponent
+    OrganismComponent,
+    UserMgmtListComponent
 } from '.';
 import { UserSearchComponent } from './user-management/user-search';
 import { GloablParameterService } from './global-parameters/global-parameter.service';
@@ -40,7 +40,6 @@ import { OrganismService } from './organism/organism.service';
 import { OrganismResolvePagingParams } from './organism/organism.route';
 import { OrganismDialogComponent } from './organism/organism-dialog/organism-dialog.component';
 import { OrganismDialogDeleteComponent } from './organism/organism-dialog/organism-dialog-delete.component';
-import { UsuarioRolOrganismoService } from '../shared/service/user-rol-organismos/user-rol-organismos.service';
 import { RolesService } from '../shared/service/roles/roles.service';
 import { MultiSelectModule } from 'primeng/primeng';
 
@@ -64,7 +63,6 @@ import { MultiSelectModule } from 'primeng/primeng';
         HealthDialogComponent,
         HealthEditDialogComponent,
         HealthDeleteDialogComponent,
-        JhiDocsComponent,
         JhiMetricsMonitoringComponent,
         JhiMetricsMonitoringModalComponent,
         GlobalParameterComponent,
@@ -72,7 +70,8 @@ import { MultiSelectModule } from 'primeng/primeng';
         GlobalParameterDeleteDialogComponent,
         OrganismComponent,
         OrganismDialogComponent,
-        OrganismDialogDeleteComponent
+        OrganismDialogDeleteComponent,
+        UserMgmtListComponent
     ],
     entryComponents: [
         UserMgmtFormComponent,
@@ -85,7 +84,8 @@ import { MultiSelectModule } from 'primeng/primeng';
         GlobalParameterDeleteDialogComponent,
         OrganismDialogComponent,
         OrganismComponent,
-        OrganismDialogDeleteComponent
+        OrganismDialogDeleteComponent,
+        UserMgmtListComponent
     ],
     providers: [
         AuditsService,
@@ -100,7 +100,6 @@ import { MultiSelectModule } from 'primeng/primeng';
         ParameterResolvePagingParams,
         OrganismService,
         OrganismResolvePagingParams,
-        UsuarioRolOrganismoService,
         RolesService
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA]

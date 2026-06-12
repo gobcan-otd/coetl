@@ -18,4 +18,6 @@ public interface OrganismoRepository extends JpaRepository<Organismo, Long> {
 
     List<Organismo> findAllByOrderByNameAsc();
 
+    List<Organismo> findByIdNotIn(List<Long> organismosId);
+
 }

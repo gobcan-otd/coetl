@@ -1,7 +1,6 @@
 package es.gobcan.coetl.service.impl;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -15,24 +14,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.criterion.DetachedCriteria;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import es.gobcan.coetl.assemblers.UsuarioRolOrganismoAssembler;
 import es.gobcan.coetl.domain.Usuario;
-import es.gobcan.coetl.domain.UsuarioRolOrganismo;
 import es.gobcan.coetl.errors.CustomParameterizedExceptionBuilder;
 import es.gobcan.coetl.errors.ErrorConstants;
 import es.gobcan.coetl.repository.UsuarioRepository;
 import es.gobcan.coetl.security.SecurityUtils;
 import es.gobcan.coetl.service.UsuarioService;
-import es.gobcan.coetl.service.validator.UserCreatorValidator;
-import es.gobcan.coetl.service.validator.UserUpdateValidator;
 import es.gobcan.coetl.service.validator.UserValidator;
-import es.gobcan.coetl.web.rest.dto.UsuarioRolOrganismoDTO;
 import es.gobcan.coetl.web.rest.util.QueryUtil;
-import es.gobcan.coetl.web.rest.vm.ManagedUserVM;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
@@ -40,25 +34,19 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final Logger log = LoggerFactory.getLogger(UsuarioServiceImpl.class);
 
     private final UsuarioRepository usuarioRepository;
-    private final UserCreatorValidator userCreatorValidator;
-    private final UserUpdateValidator userUpdateValidator;
+
+    @Autowired
     private UserValidator userValidator;
 
     private QueryUtil queryUtil;
 
-    public UsuarioServiceImpl(UsuarioRepository userRepository, QueryUtil queryUtil, UserCreatorValidator userValidator, 
-            UserUpdateValidator userUpdateValidator) {
+    public UsuarioServiceImpl(UsuarioRepository userRepository, QueryUtil queryUtil) {
         this.usuarioRepository = userRepository;
         this.queryUtil = queryUtil;
-        this.userCreatorValidator = userValidator;
-        this.userUpdateValidator = userUpdateValidator;
     }
 
     public Usuario createUsuario(@NotNull Usuario user) {
-        userValidator = new UserValidator();
-        userCreatorValidator.validate(user);
-        userValidator.validatIfUserHasAtLeastOneRolOrganismoOrIsAdmin(user);
-        userValidator.validatIfRolOrganismoIsJustOnce(user.getUsuarioRolOrganismo());
+        userValidator.validate(user);
         Usuario newUser = usuarioRepository.saveAndFlush(user);
         log.debug("Creada informaicón para el usuario: {}", newUser);
         return newUser;
@@ -76,15 +64,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Transactional
     public Usuario updateUsuario(Usuario user) {
-        userValidator = new UserValidator();
-        userUpdateValidator.validate(user);
-        userValidator.validatIfUserHasAtLeastOneRolOrganismoOrIsAdmin(user);
-        userValidator.validatIfRolOrganismoIsJustOnce(user.getUsuarioRolOrganismo());
-        for (UsuarioRolOrganismo r : user.getUsuarioRolOrganismo()) {
-            r.setIdRol(r.getRol().getId());
-            r.setIdOrganismo(r.getOrganismo().getId());
-            r.setIdUsuario(user.getId());
-        }
+        userValidator.validate(user);
         return usuarioRepository.saveAndFlush(user);
     }
 
@@ -144,39 +124,18 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     public Usuario getUsuarioWithAuthorities() {
-        Usuario returnValue = usuarioRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).orElse(new Usuario());
-        if (returnValue.isDeleted()) {
-            returnValue.setUsuarioRolOrganismo(new ArrayList<>());
-        }
-
-        return returnValue;
+        return usuarioRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin()).orElse(new Usuario());
     }
 
     @Override
     public String[] getNotRepeatEmailsUsuarioAdmin() {
-        List<Usuario> usuarios = usuarioRepository.findByIsAdminTrue();
+        List<Usuario> usuarios = usuarioRepository.findByIsAdminTrueAndDeletionDateIsNull();
         Set<String> usuarioEmails = usuarios.stream()
                 .filter(user -> user.getIsAdmin()).map(usu -> usu.getEmail())
                 .collect(Collectors.toSet());
 
         String[] emails = usuarioEmails.toArray(new String[usuarioEmails.size()]);
         return emails;
-    }
-
-    @Override
-    public List<UsuarioRolOrganismoDTO> getPermisosUsuario(String login) {
-        Optional<Usuario> user = usuarioRepository.findOneByLogin(login);
-        return user.isPresent() ?
-         UsuarioRolOrganismoAssembler.usuarioRolOrganismoToDTO(user.get().getUsuarioRolOrganismo()) : null;
-    }
-
-    @Override
-    public void setPermission(ManagedUserVM managedUserVM, Long userId) {
-        for (UsuarioRolOrganismo r : managedUserVM.getUsuarioRolOrganismo()) {
-            r.setIdRol(r.getRol().getId());
-            r.setIdOrganismo(r.getOrganismo().getId());
-            r.setIdUsuario(userId);
-        }
     }
 
 }

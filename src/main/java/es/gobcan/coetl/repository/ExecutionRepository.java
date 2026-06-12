@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import es.gobcan.coetl.domain.Execution;
 import es.gobcan.coetl.domain.Execution.Result;
+import es.gobcan.coetl.domain.enumeration.TipoPlataformaEjecucion;
 
 @Repository
 public interface ExecutionRepository extends JpaRepository<Execution, Long> {
@@ -32,5 +33,9 @@ public interface ExecutionRepository extends JpaRepository<Execution, Long> {
 
     @Query(value = "select e.id,e.planning_date,e.start_date,e.finish_date,e.\"type\",e.\"result\",e.notes,e.etl_fk,e.id_execution, e.executor from tb_executions e where e.etl_fk = ?1 and to_char(e.planning_date, 'DD/MM/YYYY') = ?2 order by e.id desc limit 1", nativeQuery = true)
     Execution findFirstByEtlIdAndPlanningDateOrderByIdDesc(Long idEtl, String planningExecutionDate);
+
+    List<Execution> findByResultAndEtlExecutionPlatform(Result running, TipoPlataformaEjecucion platform);
+
+    Execution findFirstByResultAndEtlExecutionPlatformOrderByPlanningDateAsc(Result waiting, TipoPlataformaEjecucion platform);
 
 }

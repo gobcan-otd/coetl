@@ -58,6 +58,10 @@ spring:
             hibernate.cache.use_second_level_cache: false
             hibernate.cache.use_query_cache: false
             hibernate.generate_statistics: false
+    http:
+        multipart:
+            max-file-size: -1
+            max-request-size: -1
 # spring.jmx.default-domain y spring.hikari.pool-name evitan que al levantar dos aplicaciones con un spring boot similar al template
 # (con beans de jmx configurado) la primera registre sus beans impidiendo a las siguientes registrar los suyos
     jmx:
@@ -85,7 +89,6 @@ spring:
         # Otherwise, it will be filled in by maven when building the WAR file
         # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
         active: #spring.profiles.active#
-        include: swagger
     thymeleaf:
         cache: true
         mode: XHTML
@@ -180,17 +183,6 @@ jhipster:
             host: localhost
             port: 5000
             queue-size: 512
-    swagger:
-        default-include-pattern: /api/.*
-        title: coetl API
-        description: coetl API documentation
-        version: 0.0.1
-        terms-of-service-url:
-        contact-name:
-        contact-url:
-        contact-email:
-        license:
-        license-url:
     ribbon:
         display-on-active-profiles: dev
 
@@ -225,7 +217,33 @@ pentaho:
         resourcesPath: FILL_PENTAHO_HOST_RESOURCES_PATH # Required: Pentaho Host Resources Path
         ownerUserResourcesPath: FILL_PENTAHO_HOST_OWNER_USER_RESOURCES_PATH # Required: Pentaho Host Owner User Resources Path
         ownerGroupResourcesPath: FILL_PENTAHO_HOST_OWNER_GROUP_RESOURCES_PATH # Required: Pentaho Host Owner Group Resources Path
-        mainResourcePrefix: FILL_KEY_PENTAHO_MAIN_RESOURCE_PREFIX # Required: Pentaho main resources prefix
+    mainResourcePrefix: FILL_KEY_PENTAHO_MAIN_RESOURCE_PREFIX # Required: Pentaho main resources prefix
+
+# ===================================================================
+# Apache Hop specific properties
+# Add your own apache properties here
+# ===================================================================
+apache-hop:
+    endpoint: FILL_APACHE_HOP_ENDPOINT # Required: Apache Hop Server Endpoint
+    auth:
+        user: FILL_APACHE_HOP_USER # Required: Apache Hop Server User
+        password: FILL_APACHE_HOP_PASSWORD # Required: Apache Hop Server Password
+    host:
+        os: FILL_APACHE_HOP_HOST_OS # Required: Apache Hop Host Operating System
+        address: FILL_APACHE_HOP_HOST_ADDRESS # Required: Apache Hop Host Address
+        username: FILL_APACHE_HOP_HOST_USERNAME # Required: Apache Hop Host Username
+        password: FILL_APACHE_HOP_HOST_PASSWORD # Required: PentApache Hopaho Host Password
+        sudoUsername: FILL_APACHE_HOP_HOST_SUDO_USERNAME # Required: Apache Hop Host Sudo Username
+        sudoPassword: FILL_APACHE_HOP_HOST_SUDO_PASSWORD # Required: Apache Hop Host Sudo Password
+        sudoPasswordPromptRegex: FILL_APACHE_HOP_HOST_SUDO_PASSWORD_PROMPT_REGEX # Required: Apache Hop Host Sudo Password Prompt Regular Expression
+        sftpPath: FILL_APACHE_HOP_HOST_SFTP_PATH # Required: Apache Hop Host SFTP Path
+        resourcesPath: FILL_APACHE_HOP_HOST_RESOURCES_PATH # Required: Apache Hop Host Resources Path
+        ownerUserResourcesPath: FILL_APACHE_HOP_HOST_OWNER_USER_RESOURCES_PATH # Required: Apache Hop Host Owner User Resources Path
+        ownerGroupResourcesPath: FILL_APACHE_HOP_HOST_OWNER_GROUP_RESOURCES_PATH # Required: Apache Hop Host Owner Group Resources Path
+    mainResourcePrefix: FILL_KEY_APACHE_HOP_MAIN_RESOURCE_PREFIX # Required: Apache Hop main resources prefix
+    variables: FILL_APACHE_HOP_VARIABLES_XML_TEMPLATE # Required: Apache Hop variables template
+    hopFolder: FILL_APCHE_HOP_FOLDER # Required: Apache Hop Folder Path
+
 git:
     username: FILL_WITH_GIT_USER # Required: GIT owner username for access
     password: FILL_WITH_GIT_PASSWORD # Required: GIT owner password for access

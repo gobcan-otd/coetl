@@ -19,16 +19,16 @@ export class ScrollService {
         const offset: number = this.calculateFixedNavbarOffsetBeforeScrollIntoView(
             titlesContainerElement
         );
-        elementTitle.scrollIntoView();
+        elementTitle.scrollIntoView({ behavior: 'instant' });
         if (this.needsOffsetScrolling(elementTitle)) {
-            window.scrollBy(0, -offset);
+            window.scrollBy({ top: -offset, left: 0, behavior: 'instant' });
         }
     }
 
     // Ugly solution to take into account the fixed navbar after scrollIntoView
     calculateFixedNavbarOffsetBeforeScrollIntoView(titlesContainerElement: HTMLElement): number {
         // Lets move to the start of the page so getBoundingClientRect give us the correct value
-        window.scroll(0, 0);
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         // Lets see where is located the titles container
         let offset = titlesContainerElement.getBoundingClientRect().top;
         // Add the top padding

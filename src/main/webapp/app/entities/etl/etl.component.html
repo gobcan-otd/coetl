@@ -48,16 +48,16 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody *ngIf="organismos">
+                    <tbody>
                         <tr [ngClass]="{ 'entity-deleted': etl.isDeleted() }" *ngFor="let etl of etls; trackBy: trackId" [routerLink]="['../etl', etl.id]">
                             <td>{{ etl.code }}</td>
                             <td>{{ etl.name }}</td>
                             <td>{{ etl.organizationInCharge?.name }}</td>
                             <td>
-                                <span class="badge badge-info">{{ getTypeName(etl) }}</span>
+                                <span class="badge bg-info">{{ getTypeName(etl) }}</span>
                             </td>
                             <td>
-                                <span class="badge" [ngClass]="{ 'badge-success': etl.isPlanning(), 'badge-warning': !etl.isPlanning() }">{{ getPlanningMessage(etl) }}</span>
+                                <span class="badge " [ngClass]="{ 'bg-success': etl.isPlanning(), 'bg-warning': !etl.isPlanning() }">{{ getPlanningMessage(etl) }}</span>
                             </td>
                             <td>{{etl.lastExecution | date: 'dd/MM/yyyy HH:mm:ss'}}</td>
                             <td>{{etl.nextExecution | date: 'dd/MM/yyyy HH:mm:ss'}}</td>

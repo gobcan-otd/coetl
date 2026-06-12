@@ -103,7 +103,7 @@ public class MailServiceImpl implements MailService {
         sendEmail(user.getEmail(), subject, content, false, true);
     }
 
-    @Override
+    @Async
     public void sendEmailErrorETL(String[] emails, Etl etl, String errorType) {
         Locale locale = Constants.DEFAULT_LOCALE;
         Context context = new Context(locale);

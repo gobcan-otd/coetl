@@ -15,7 +15,6 @@ import es.gobcan.coetl.domain.Usuario;
 import es.gobcan.coetl.domain.UsuarioRolOrganismo;
 import es.gobcan.coetl.domain.enumeration.Rol;
 import es.gobcan.coetl.repository.UsuarioRepository;
-import es.gobcan.coetl.repository.UsuarioRolOrganismoRepository;
 import es.gobcan.coetl.service.EtlService;
 
 @Component("secChecker")
@@ -23,9 +22,6 @@ public class SecurityChecker {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private UsuarioRolOrganismoRepository usuarioRolOrganismoRepository;
 
     @Autowired
     private EtlService etlService;
@@ -148,7 +144,7 @@ public class SecurityChecker {
             return false;
         }
 
-        List<UsuarioRolOrganismo> organismosUsuario = usuarioRolOrganismoRepository.findByIdUsuario(user.get().getId());
+        List<UsuarioRolOrganismo> organismosUsuario = user.get().getUsuarioRolOrganismo();
         List<Roles> rolesUsuario = organismosUsuario.stream().map(r -> r.getRol()).collect(Collectors.toList());
 
         for (int i = 0; i < rolesUsuario.size(); i++) {

@@ -13,6 +13,7 @@ export class Account {
         public apellido2: string,
         public login: string,
         public isAdmin: boolean,
-        public usuarioRolOrganismo?: UsuarioRolOrganismo[]
+        public usuarioRolOrganismo?: UsuarioRolOrganismo[],
+        public deletionDate?: Date
     ) {}
 }

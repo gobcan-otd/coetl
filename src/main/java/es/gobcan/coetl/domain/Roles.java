@@ -1,6 +1,7 @@
 package es.gobcan.coetl.domain;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,10 +13,13 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.validator.constraints.NotBlank;
 
 @Entity
 @Table(name = "tb_roles")
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class Roles implements Serializable {
 
     private static final long serialVersionUID = 6693527767636990261L;
@@ -45,6 +49,34 @@ public class Roles implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Roles roles = (Roles) o;
+        return !(roles.getId() == null || getId() == null) && Objects.equals(getId(), roles.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getId());
+    }
+
+    @Override
+    public String toString() {
+        //@formatter:off
+        return "Roles (" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+                ")";
+        //@formatter:on
     }
 
 }

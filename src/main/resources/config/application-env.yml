@@ -56,7 +56,31 @@ pentaho:
         resourcesPath: FILL_PENTAHO_HOST_RESOURCES_PATH # Required: Pentaho Host Resources Path
         ownerUserResourcesPath: FILL_PENTAHO_HOST_OWNER_USER_RESOURCES_PATH # Required: Pentaho Host Owner User Resources Path
         ownerGroupResourcesPath: FILL_PENTAHO_HOST_OWNER_GROUP_RESOURCES_PATH # Required: Pentaho Host Owner Group Resources Path
-        mainResourcePrefix: FILL_KEY_PENTAHO_MAIN_RESOURCE_PREFIX # Required: Pentaho main resources prefix
+    mainResourcePrefix: FILL_KEY_PENTAHO_MAIN_RESOURCE_PREFIX # Required: Pentaho main resources prefix
+
+# ===================================================================
+# Apache Hop specific properties
+# Add your own apache properties here
+# ===================================================================
+apache-hop:
+    endpoint: FILL_APACHE_HOP_ENDPOINT # Required: Apache Hop Server Endpoint
+    auth:
+        user: FILL_APACHE_HOP_USER # Required: Apache Hop Server User
+        password: FILL_APACHE_HOP_PASSWORD # Required: Apache Hop Server Password
+    host:
+        os: FILL_APACHE_HOP_HOST_OS # Required: Apache Hop Host Operating System
+        address: FILL_APACHE_HOP_HOST_ADDRESS # Required: Apache Hop Host Address
+        username: FILL_APACHE_HOP_HOST_USERNAME # Required: Apache Hop Host Username
+        password: FILL_APACHE_HOP_HOST_PASSWORD # Required: PentApache Hopaho Host Password
+        sudoUsername: FILL_APACHE_HOP_HOST_SUDO_USERNAME # Required: Apache Hop Host Sudo Username
+        sudoPassword: FILL_APACHE_HOP_HOST_SUDO_PASSWORD # Required: Apache Hop Host Sudo Password
+        sudoPasswordPromptRegex: FILL_APACHE_HOP_HOST_SUDO_PASSWORD_PROMPT_REGEX # Required: Apache Hop Host Sudo Password Prompt Regular Expression
+        sftpPath: FILL_APACHE_HOP_HOST_SFTP_PATH # Required: Apache Hop Host SFTP Path
+        resourcesPath: FILL_APACHE_HOP_HOST_RESOURCES_PATH # Required: Apache Hop Host Resources Path
+        ownerUserResourcesPath: FILL_APACHE_HOP_HOST_OWNER_USER_RESOURCES_PATH # Required: Apache Hop Host Owner User Resources Path
+        ownerGroupResourcesPath: FILL_APACHE_HOP_HOST_OWNER_GROUP_RESOURCES_PATH # Required: Apache Hop Host Owner Group Resources Path
+    mainResourcePrefix: FILL_KEY_APACHE_HOP_MAIN_RESOURCE_PREFIX # Required: Apache Hop main resources prefix
+
 git:
     username: FILL_WITH_GIT_USER # Required: GIT owner username for access
     password: FILL_WITH_GIT_PASSWORD # Required: GIT owner password for access

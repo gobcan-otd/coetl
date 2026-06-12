@@ -2,7 +2,6 @@ package es.gobcan.coetl.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -44,9 +43,9 @@ import es.gobcan.coetl.repository.RolesRepository;
 import es.gobcan.coetl.repository.UsuarioRepository;
 import es.gobcan.coetl.repository.UsuarioRolOrganismoRepository;
 import es.gobcan.coetl.service.MailService;
-import es.gobcan.coetl.service.UsuarioRolOrganismoService;
 import es.gobcan.coetl.service.UsuarioService;
 import es.gobcan.coetl.web.rest.dto.UsuarioDTO;
+import es.gobcan.coetl.web.rest.dto.UsuarioRolOrganismoDTO;
 import es.gobcan.coetl.web.rest.mapper.UsuarioMapper;
 import es.gobcan.coetl.web.rest.vm.ManagedUserVM;
 
@@ -115,19 +114,20 @@ public class UsuarioResourceIntTest {
     private Organismo newOrganismo;
     private Roles newRol;
     private UsuarioRolOrganismo rol1;
+    private UsuarioRolOrganismo rol2;
+    private UsuarioRolOrganismoDTO rolDto;
     private Usuario newUser2;
     List<UsuarioRolOrganismo> roles;
+    List<UsuarioRolOrganismo> roles2;
+    List<UsuarioRolOrganismoDTO> rolesDto;
 
     @Autowired
     private AuditEventPublisher auditPublisher;
 
-    @Autowired
-    private UsuarioRolOrganismoService usuarioRolOrganismoService;
-
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        UsuarioResource userResource = new UsuarioResource(userRepository, mailService, userService, userMapper, auditPublisher, usuarioRolOrganismoService);
+        UsuarioResource userResource = new UsuarioResource(userRepository, mailService, userService, userMapper, auditPublisher);
         this.restUserMockMvc = MockMvcBuilders.standaloneSetup(userResource).setCustomArgumentResolvers(pageableArgumentResolver).setControllerAdvice(exceptionTranslator)
                 .setMessageConverters(jacksonMessageConverter).build();
     }
@@ -143,6 +143,7 @@ public class UsuarioResourceIntTest {
         user.setEmail(DEFAULT_EMAIL);
         user.setNombre(DEFAULT_NOMBRE);
         user.setApellido1(DEFAULT_PRIMER_APELLIDO);
+        user.setAllEtlAccess(true);
         return user;
     }
 
@@ -152,6 +153,7 @@ public class UsuarioResourceIntTest {
         user.setEmail(DEFAULT_NEW_EMAIL);
         user.setNombre(DEFAULT_NOMBRE);
         user.setApellido1(DEFAULT_PRIMER_APELLIDO);
+        user.setAllEtlAccess(true);
         return user;
     }
 
@@ -169,17 +171,47 @@ public class UsuarioResourceIntTest {
         rol1 = new UsuarioRolOrganismo();
         rol1.setOrganismo(newOrganismo);
         rol1.setRol(newRol);
-        rol1.setIdUsuario(newUser2.getId());
-        rol1.setIdRol(newRol.getId());
-        rol1.setIdOrganismo(newOrganismo.getId());
-        usuarioRolOrganismoRepository.saveAndFlush(rol1);
-
+        rol1.setUsuario(newUser);
     }
-    
+
+    private void setRolOrganismoUser2() {
+        Organismo organismo = new Organismo();
+        organismo.setDescription("Description2");
+        organismo.setName("Name2");
+        organismoRepository.saveAndFlush(organismo);
+        
+        Roles rol = new Roles();
+        rol.setName(Rol.LECTOR.name());
+        rolesRepository.saveAndFlush(rol);
+
+        rol2 = new UsuarioRolOrganismo();
+        rol2.setOrganismo(organismo);
+        rol2.setRol(rol);
+        rol2.setUsuario(newUser2);
+    }
+
+    private void setRolOrganismoDTO() {
+        rolDto = new UsuarioRolOrganismoDTO();
+        rolDto.setOrganismo(rol1.getOrganismo());
+        rolDto.setRol(rol1.getRol());
+    }
+
     private List<UsuarioRolOrganismo> getPermisos() {
         roles = new ArrayList<>();
         roles.add(rol1);
         return roles;
+    }
+
+    private List<UsuarioRolOrganismo> getPermisosUser2() {
+        roles2 = new ArrayList<>();
+        roles2.add(rol2);
+        return roles2;
+    }
+
+    private List<UsuarioRolOrganismoDTO> getPermisosDTO() {
+        rolesDto = new ArrayList<>();
+        rolesDto.add(rolDto);
+        return rolesDto;
     }
 
     private void createUser2() {
@@ -188,6 +220,9 @@ public class UsuarioResourceIntTest {
         newUser2.setNombre("john");
         newUser2.setApellido1("doe");
         newUser2.setEmail("john.doe@jhipster.com");
+        newUser2.setAllEtlAccess(true);
+        setRolOrganismoUser2();
+        newUser2.setUsuarioRolOrganismo(getPermisosUser2());
         usuarioRepository.saveAndFlush(newUser2);
     }
 
@@ -199,10 +234,12 @@ public class UsuarioResourceIntTest {
     public void initTest() {
         newUser = mockEntityWithoutId(DEFAULT_LOGIN_NEW_USER);
         existingUser = createEntity(DEFAULT_LOGIN_EXISTING_USER);
+        existingUser.setUsuarioRolOrganismo(getPermisos());
         em.persist(existingUser);
 
         createUser2();
         setRolOrganismo();
+        setRolOrganismoDTO();
         setPermisos();
     }
 
@@ -212,8 +249,8 @@ public class UsuarioResourceIntTest {
         int databaseSizeBeforeCreate = userRepository.findAll().size();
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
-        UsuarioDTO source = usuarioMapper.userToUserDTO(newUser);
-        source.setUsuarioRolOrganismo(roles);
+        UsuarioDTO source = usuarioMapper.toDto(newUser);
+        source.setUsuarioRolOrganismo(getPermisosDTO());
         managedUserVM.updateFrom(source);
 
         restUserMockMvc.perform(post(ENDPOINT_URL).contentType(TestUtil.APPLICATION_JSON_UTF8).content(TestUtil.convertObjectToJsonBytes(managedUserVM))).andExpect(status().isCreated());
@@ -239,7 +276,8 @@ public class UsuarioResourceIntTest {
         userWithExistingId.setEmail("anothermail@localhost");
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
-        UsuarioDTO source = usuarioMapper.userToUserDTO(userWithExistingId);
+        UsuarioDTO source = usuarioMapper.toDto(userWithExistingId);
+        source.setUsuarioRolOrganismo(getPermisosDTO());
         managedUserVM.updateFrom(source);
 
         // An entity with an existing ID cannot be created, so this API call must fail
@@ -263,9 +301,11 @@ public class UsuarioResourceIntTest {
         userWithExistingLogin.setNombre("anothername");
         userWithExistingLogin.setApellido1("anotherelastname");
         userWithExistingLogin.setEmail("another@localhost");
+        userWithExistingLogin.setUsuarioRolOrganismo(getPermisos());
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
-        UsuarioDTO source = usuarioMapper.userToUserDTO(userWithExistingLogin);
+        UsuarioDTO source = usuarioMapper.toDto(userWithExistingLogin);
+        source.setUsuarioRolOrganismo(getPermisosDTO());
         managedUserVM.updateFrom(source);
 
         // Create the User
@@ -290,9 +330,12 @@ public class UsuarioResourceIntTest {
         userWithExistingEmail.setNombre("anothername");
         userWithExistingEmail.setApellido1("anotherelastname");
         userWithExistingEmail.setEmail(newUser.getEmail());
+        userWithExistingEmail.setAllEtlAccess(true);
+        userWithExistingEmail.setUsuarioRolOrganismo(getPermisos());
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
-        UsuarioDTO source = usuarioMapper.userToUserDTO(userWithExistingEmail);
+        UsuarioDTO source = usuarioMapper.toDto(userWithExistingEmail);
+        source.setUsuarioRolOrganismo(getPermisosDTO());
         managedUserVM.updateFrom(source);
 
         // Create the User
@@ -308,7 +351,7 @@ public class UsuarioResourceIntTest {
     public void createAdminUser() throws Exception {
     	int databaseSizeBeforeCreate = userRepository.findAll().size();
     	ManagedUserVM managedUserVM = new ManagedUserVM();
-        UsuarioDTO source = usuarioMapper.userToUserDTO(newUser);
+        UsuarioDTO source = usuarioMapper.toDto(newUser);
         source.setUsuarioRolOrganismo(null);
         source.setIsAdmin(true);
         managedUserVM.updateFrom(source);
@@ -325,9 +368,9 @@ public class UsuarioResourceIntTest {
     public void createAdminUserWithRoleOrganism() throws Exception {
     	int databaseSizeBeforeCreate = userRepository.findAll().size();
     	ManagedUserVM managedUserVM = new ManagedUserVM();
-        UsuarioDTO source = usuarioMapper.userToUserDTO(newUser);
+        UsuarioDTO source = usuarioMapper.toDto(newUser);
         source.setIsAdmin(true);
-        source.setUsuarioRolOrganismo(roles);
+        source.setUsuarioRolOrganismo(getPermisosDTO());
         managedUserVM.updateFrom(source);
         
         restUserMockMvc.perform(post(ENDPOINT_URL).contentType(TestUtil.APPLICATION_JSON_UTF8).content(TestUtil.convertObjectToJsonBytes(managedUserVM))).andExpect(status().isBadRequest());
@@ -344,9 +387,10 @@ public class UsuarioResourceIntTest {
         userRepository.save(newUser);
 
         // Get all the users
-        restUserMockMvc.perform(get("/api/usuarios?sort=id,desc").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN_NEW_USER))).andExpect(jsonPath("$.[*].nombre").value(hasItem(DEFAULT_NOMBRE)))
-                .andExpect(jsonPath("$.[*].apellido1").value(hasItem(DEFAULT_PRIMER_APELLIDO))).andExpect(jsonPath("$.[*].email").value(hasItem(DEFAULT_EMAIL)));
+        restUserMockMvc.perform(get("/api/usuarios?sort=id,desc").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)).andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN_NEW_USER)))
+                .andExpect(jsonPath("$.[*].nombre").value(hasItem(DEFAULT_NOMBRE))).andExpect(jsonPath("$.[*].apellido1").value(hasItem(DEFAULT_PRIMER_APELLIDO)))
+                .andExpect(jsonPath("$.[*].email").value(hasItem(DEFAULT_EMAIL)));
     }
 
     @Test
@@ -376,13 +420,13 @@ public class UsuarioResourceIntTest {
         Usuario updatedUser = userRepository.findOne(existingUser.getId());
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
-        UsuarioDTO source = usuarioMapper.userToUserDTO(updatedUser);
+        UsuarioDTO source = usuarioMapper.toDto(updatedUser);
         source.setLogin("daniel");
         source.setNombre("Daniel");
         source.setApellido1("Smith");
         source.setApellido2("Down");
         source.setEmail("email@email.com");
-        source.setUsuarioRolOrganismo(roles);
+        source.setUsuarioRolOrganismo(getPermisosDTO());
         managedUserVM.updateFrom(source);
 
         restUserMockMvc.perform(put(ENDPOINT_URL).contentType(TestUtil.APPLICATION_JSON_UTF8).content(TestUtil.convertObjectToJsonBytes(managedUserVM))).andExpect(status().isOk());
@@ -405,6 +449,7 @@ public class UsuarioResourceIntTest {
         anotherUser.setEmail("jhipster@localhost");
         anotherUser.setNombre("java");
         anotherUser.setApellido1("hipster");
+        anotherUser.setAllEtlAccess(true);
         userRepository.save(anotherUser);
 
         // Update the user
@@ -412,8 +457,9 @@ public class UsuarioResourceIntTest {
 
         //@formatter:off
 		ManagedUserVM managedUserVM = new ManagedUserVM();
-		UsuarioDTO source = usuarioMapper.userToUserDTO(updatedUser);
+		UsuarioDTO source = usuarioMapper.toDto(updatedUser);
         source.setEmail(anotherUser.getEmail());
+        source.setUsuarioRolOrganismo(getPermisosDTO());
 		managedUserVM.updateFrom(source);
 		//@formatter:on
 
@@ -429,6 +475,7 @@ public class UsuarioResourceIntTest {
         anotherUser.setEmail("jhipster@localhost");
         anotherUser.setNombre("java");
         anotherUser.setApellido1("hipster");
+        anotherUser.setAllEtlAccess(true);
         userRepository.save(anotherUser);
 
         // Update the user
@@ -436,8 +483,9 @@ public class UsuarioResourceIntTest {
 
         //@formatter:off
 		ManagedUserVM managedUserVM = new ManagedUserVM();
-		UsuarioDTO source = usuarioMapper.userToUserDTO(updatedUser);
+		UsuarioDTO source = usuarioMapper.toDto(updatedUser);
         source.setLogin(anotherUser.getLogin());
+        source.setUsuarioRolOrganismo(getPermisosDTO());
 		managedUserVM.updateFrom(source);
 		//@formatter:on
         restUserMockMvc.perform(put(ENDPOINT_URL).contentType(TestUtil.APPLICATION_JSON_UTF8).content(TestUtil.convertObjectToJsonBytes(managedUserVM))).andExpect(status().isBadRequest());
@@ -472,12 +520,12 @@ public class UsuarioResourceIntTest {
 				.setCreatedDate(null)
 				.setLastModifiedBy(DEFAULT_LOGIN_NEW_USER)
 				.setLastModifiedDate(null)
-				.setAuthorities(roles)
+				.setAuthorities(getPermisosDTO())
 				.build();
 		managedUserVM.updateFrom(source);
 		//@formatter:on
 
-        Usuario user = userMapper.userDTOToUser(source);
+        Usuario user = userMapper.toEntity(source);
         assertThat(user.getId()).isEqualTo(source.getId());
         assertThat(user.getLogin()).isEqualTo(source.getLogin());
         assertThat(user.getNombre()).isEqualTo(source.getNombre());
@@ -493,7 +541,7 @@ public class UsuarioResourceIntTest {
     @Test
     @Transactional
     public void testUserToUserDTO() {
-        UsuarioDTO userDTO = userMapper.userToUserDTO(newUser);
+        UsuarioDTO userDTO = userMapper.toDto(newUser);
         assertThat(userDTO.getId()).isEqualTo(newUser.getId());
         assertThat(userDTO.getLogin()).isEqualTo(newUser.getLogin());
         assertThat(userDTO.getNombre()).isEqualTo(newUser.getNombre());
@@ -503,7 +551,8 @@ public class UsuarioResourceIntTest {
         assertThat(userDTO.getCreatedDate()).isEqualTo(newUser.getCreatedDate());
         assertThat(userDTO.getLastModifiedBy()).isEqualTo(newUser.getLastModifiedBy());
         assertThat(userDTO.getLastModifiedDate()).isEqualTo(newUser.getLastModifiedDate());
-        assertEquals(userDTO.getUsuarioRolOrganismo(), newUser.getUsuarioRolOrganismo());
+        assertThat(userDTO.getUsuarioRolOrganismo().get(0).getRol()).isEqualTo(newUser.getUsuarioRolOrganismo().get(0).getRol());
+        assertThat(userDTO.getUsuarioRolOrganismo().get(0).getOrganismo()).isEqualTo(newUser.getUsuarioRolOrganismo().get(0).getOrganismo());
         assertThat(userDTO.toString()).isNotNull();
     }
 }

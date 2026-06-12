@@ -8,7 +8,11 @@ import { AcAlertService } from './alert.service';
     selector: 'jhi-alert-error',
     template: `
         <div *ngIf="alertService.isToast() && hasAlerts()" class="alert-backdrop"></div>
-        <div class="alerts" role="alert" [ngClass]="{ toast: alertService.isToast() }">
+        <div
+            class="alerts"
+            role="alert"
+            style="position: absolute !important;z-index:1055 !important;"
+        >
             <div *ngFor="let alert of alerts" [class]="alert.position">
                 <ngb-alert
                     *ngIf="alert && alert.type"

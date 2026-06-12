@@ -90,7 +90,6 @@ export class CalendarComponent implements ControlValueAccessor, OnInit {
     @Input()
     required = false;
 
-    // Equivalente a DD/MM/YYYY de acDate
     @Input()
     dateFormat = 'dd/mm/yy';
 

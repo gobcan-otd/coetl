@@ -25,6 +25,14 @@ export const createRequestOption = (req?: any): BaseRequestOptions => {
             params.set('permisos', req.permisos);
         }
 
+        if (req.exclusions) {
+            params.set('exclusions', req.exclusions);
+        }
+
+        if (req.executionPlatform) {
+            params.set('executionPlatform', req.executionPlatform);
+        }
+
         options.params = params;
     }
     return options;

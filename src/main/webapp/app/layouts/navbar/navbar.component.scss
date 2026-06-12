@@ -45,7 +45,6 @@ Navbar
         font-size: 1.5em;
         padding: $navbar-padding-y;
         vertical-align: middle;
-        display: inline-block;
         &:hover {
             color: $white;
         }
@@ -70,6 +69,15 @@ Navbar
         padding-left: 1em;
         display: inline-block;
     }
+}
+
+.show > .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu-right {
+    right: 0;
+    left: auto;
 }
 
 /* ==========================================================================

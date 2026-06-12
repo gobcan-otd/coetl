@@ -55,29 +55,33 @@ public class OrganismoServiceImpl implements OrganismoService {
     private SecurityChecker secCheck;
 
     @Override
-    public List<Organismo> findAll() {
+    public List<Organismo> findAll(List<Long> organismosId) {
+        if (organismosId != null && !organismosId.isEmpty()) {
+            return organismoRepository.findByIdNotIn(organismosId);
+        }
+
         return organismoRepository.findAllByOrderByNameAsc();
     }
 
     @Override
     public List<Organismo> findByIdUsuario(Long idUsuario) {
         if (secCheck.canSeeAllEtls(SecurityContextHolder.getContext().getAuthentication())) {
-            return findAll();
+            return findAll(null);
         }
 
         Sort sort = new Sort(Sort.Direction.ASC, "organismo.name");
-        List<UsuarioRolOrganismo> organismosUsuario = usuarioRolOrganismoRespository.findByIdUsuario(idUsuario, sort);
+        List<UsuarioRolOrganismo> organismosUsuario = usuarioRolOrganismoRespository.findByUsuarioId(idUsuario, sort);
         return organismosUsuario.stream().map(or -> or.getOrganismo()).collect(Collectors.toList());
     }
 
     @Override
     public List<Organismo> findByIdUsuarioManage(Long idUsuario) {
         if (secCheck.canSeeAllEtls(SecurityContextHolder.getContext().getAuthentication())) {
-            return findAll();
+            return findAll(null);
         }
 
         Sort sort = new Sort(Sort.Direction.ASC, "organismo.name");
-        List<UsuarioRolOrganismo> organismosUsuario = usuarioRolOrganismoRespository.findByIdUsuario(idUsuario, sort);
+        List<UsuarioRolOrganismo> organismosUsuario = usuarioRolOrganismoRespository.findByUsuarioId(idUsuario, sort);
         return organismosUsuario.stream().filter(obj -> Arrays.asList(Rol.TECNICO.name()).stream().anyMatch(rol -> rol.equals(obj.getRol().getName())))
                 .map(org -> org.getOrganismo()).collect(Collectors.toList());
     }
@@ -140,7 +144,7 @@ public class OrganismoServiceImpl implements OrganismoService {
     }
 
     private void checkIfAnyUserHasOrganismo(Long idOrganismo) {
-        List<UsuarioRolOrganismo> usuarios = usuarioRolOrganismoRespository.findByIdOrganismo(idOrganismo);
+        List<UsuarioRolOrganismo> usuarios = usuarioRolOrganismoRespository.findByOrganismoId(idOrganismo);
 
         if (!usuarios.isEmpty()) {
             throw new CustomParameterizedExceptionBuilder().message(String.format(DELETE_ERROR_MESSAGE_USER_HAS_ORGANISMO, idOrganismo))

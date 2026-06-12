@@ -11,3 +11,11 @@ td.hover,
 tr.hoverable:hover {
     background-color: #f8f8f8;
 }
+
+td {
+    border-bottom-color: #f8f8f8 !important;
+}
+
+table.table-hover > tbody > tr:hover {
+    --bs-table-accent-bg: #f8f8f8;
+}

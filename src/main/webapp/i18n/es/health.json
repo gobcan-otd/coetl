@@ -18,7 +18,8 @@
             "mail": "Email",
             "db": "Base de datos",
             "cas": "CAS",
-            "pentaho": "Pentaho Data Integration Server"
+            "pentaho": "Pentaho Data Integration Server",
+            "apacheHop": "Apache HOP"
         },
         "table": {
             "service": "Nombre del servicio",

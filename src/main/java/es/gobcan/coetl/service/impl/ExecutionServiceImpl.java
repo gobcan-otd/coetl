@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import es.gobcan.coetl.domain.Execution;
 import es.gobcan.coetl.domain.Execution.Result;
+import es.gobcan.coetl.domain.enumeration.TipoPlataformaEjecucion;
 import es.gobcan.coetl.repository.ExecutionRepository;
 import es.gobcan.coetl.service.ExecutionService;
 
@@ -61,8 +62,21 @@ public class ExecutionServiceImpl implements ExecutionService {
         return executionRepository.findFirstByResultOrderByPlanningDateAsc(Result.WAITING);
     }
 
+    @Override
+    public List<Execution> getInRunningResultAndEtlExecutionPlatform(TipoPlataformaEjecucion platform) {
+        LOG.debug("Request to get Execution in RUNNING");
+        return executionRepository.findByResultAndEtlExecutionPlatform(Result.RUNNING, platform);
+    }
+
+    @Override
+    public Execution getOldestInWaitingResultAndEtlExecutionPlatform(TipoPlataformaEjecucion platform) {
+        LOG.debug("Request to get the oldest Execution in WAITING");
+        return executionRepository.findFirstByResultAndEtlExecutionPlatformOrderByPlanningDateAsc(Result.WAITING, platform);
+    }
+
     private Execution save(Execution execution) {
         LOG.debug("Request to create an Execution : {}", execution);
         return executionRepository.saveAndFlush(execution);
     }
+
 }
